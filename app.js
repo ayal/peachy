@@ -224,7 +224,7 @@ const App = React.createClass({
     componentWillMount: function() {
 	var that = this;
 	var toset = {};
-	_.each(list.slice(0,8), function(u){
+	_.each(list.slice(0,12), function(u){
 	    toset[u] = <Square />;
 	});
 

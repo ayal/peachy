@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "e0ee59849396bca51cc4"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "f2242c0040c21ee37690"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -617,7 +617,7 @@
 	    componentWillMount: function componentWillMount() {
 	        var that = this;
 	        var toset = {};
-	        _.each(list.slice(0, 8), function (u) {
+	        _.each(list.slice(0, 12), function (u) {
 	            toset[u] = _react2.default.createElement(Square, null);
 	        });
 
