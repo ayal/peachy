@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "aad8135a6f48198420ce"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "79025a659013aabe2edb"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -616,10 +616,22 @@
 	    },
 	    componentWillMount: function componentWillMount() {
 	        var that = this;
+	        var toset = {};
 	        _.each(list.slice(0, 8), function (u) {
+	            toset[u] = _react2.default.createElement(Square, null);
+	        });
+
+	        that.setState(toset);
+
+	        _.each(list.slice(0, 8), function (u) {
+
 	            $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function (x) {
 	                var toset = {};
-	                toset[u] = x.responseData.feed.entries;
+	                var e = _.sample(x.responseData.feed.entries);
+	                toset[u] = _react2.default.createElement(Square, { href: e.link, name: e.title, text: e.contentSnippet, more: e,
+	                    getimgsrc: function getimgsrc(x) {
+	                        return $($('<div>' + x.content + '</div>').find('img')).attr('src') || console.log(x.content);
+	                    } });
 	                that.setState(toset);
 	            });
 	        });
@@ -639,39 +651,9 @@
 	        }
 
 	        var squares = [];
-	        _.each(list, function (u) {
-	            if (that.state[u]) {
-	                squares = _.union(squares, _.map(_.sample(that.state[u], 2), function (e) {
-	                    return _react2.default.createElement(Square, { href: e.link, name: e.title, text: e.contentSnippet, more: e, getimgsrc: function getimgsrc(x) {
-	                            return $($('<div>' + x.content + '</div>').find('img')).attr('src') || console.log(x.content);
-	                        } });
-	                }));
-	            } else {
-	                squares = _.union(squares, [_react2.default.createElement(Square, null), _react2.default.createElement(Square, null)]);
-	            }
+	        _.each(that.state, function (v, u) {
+	            squares = _.union(squares, [v]);
 	        });
-
-	        /*	var squares = _.shuffle(
-	        	    _.union(
-	        	    _.map(this.state.pitch, function(e){
-	        		return  (
-	        			<PitchSquare href={e.link} name={e.title} text={e.contentSnippet} more={e} />
-	        		)
-	        	    }),
-	        		_.map(this.state.queen, function(e){
-	        
-	        		return  (
-	        			<Square href={e.link} name={e.title} text={e.contentSnippet} more={e} getimgsrc={(x) => { return $($(x.content)[0]).attr('src')}}/>
-	        		)
-	        	    }),
-	        		_.map(this.state.huh, function(e){
-	        		    return (
-	        			    <Square href={e.link} name={e.title} text={e.contentSnippet} more={e} getimgsrc={(x) => { return $($(x.content)[0]).find('img').attr('src')}}/>
-	        		)
-	        	    })
-	        
-	        	    )
-	        	);*/
 
 	        return _react2.default.createElement(
 	            'div',
@@ -723,6 +705,28 @@
 	    }
 	});
 
+	var Pic = _react2.default.createClass({
+	    displayName: 'Pic',
+
+	    getInitialState: function getInitialState() {
+	        return { loaded: false };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var that = this;
+	        $('<img />').css({ position: 'absolute', left: '-10000px' }).load(function () {
+	            that.setState({ loaded: true });
+	        }).attr({ src: this.props.src });
+	    },
+	    nav: function nav(k, v) {},
+	    render: function render() {
+	        var src = this.props.src;
+	        if (!this.state.loaded) {
+	            src = '';
+	        }
+	        return _react2.default.createElement('img', { src: this.props.src });
+	    }
+	});
+
 	var PitchSquare = _react2.default.createClass({
 	    displayName: 'PitchSquare',
 
@@ -743,7 +747,7 @@
 	            _react2.default.createElement(
 	                'a',
 	                { href: 'http://pizi.meteor.com/artists/' + this.state.artist + '/albums/' + this.state.name + '/tracks/', target: '_blank' },
-	                _react2.default.createElement('img', { src: this.state.artwork }),
+	                _react2.default.createElement(Pic, { src: this.state.artwork }),
 	                _react2.default.createElement(
 	                    'div',
 	                    { className: 'text' },
@@ -762,7 +766,8 @@
 	(0, _reactDom.render)(_react2.default.createElement(
 	    _reactRouter.Router,
 	    { history: (0, _createBrowserHistory2.default)() },
-	    _react2.default.createElement(_reactRouter.Route, { path: '/peachy', component: App })
+	    _react2.default.createElement(_reactRouter.Route, { path: '/', component: App }),
+	    _react2.default.createElement(_reactRouter.Route, { path: '/peachy/', component: App })
 	), document.getElementById('content'));
 
 /***/ },
@@ -25206,7 +25211,7 @@
 
 
 	// module
-	exports.push([module.id, "body {\n  background: #F7CAC9;\n}\n.square {\n  width: 310px;\n  display: inline-block;\n  margin: 20px;\n  background: #92A8D1;\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px;\n}\n.square img {\n  width: 100%;\n  min-height: 200px;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .text {\n  display: none;\n  height: 100px;\n  padding: 0 10px;\n  font-family: courier;\n  font-size: 11px;\n}\n", ""]);
+	exports.push([module.id, "body {\n  background: #F7CAC9;\n  overflow-x: hidden;\n  position: relative;\n}\n#content {\n  width: 320px;\n  padding-right: 15px;\n  padding-left: 15px;\n  margin-right: auto;\n  margin-left: auto;\n}\n.square {\n  width: 310px;\n  display: inline-block;\n  margin: 20px;\n  background: #92A8D1;\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px;\n}\n.square img {\n  width: 100%;\n  min-height: 200px;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .text {\n  display: none;\n  height: 100px;\n  padding: 0 10px;\n  font-family: courier;\n  font-size: 11px;\n}\n", ""]);
 
 	// exports
 

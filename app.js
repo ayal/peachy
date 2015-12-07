@@ -223,15 +223,24 @@ const App = React.createClass({
     },
     componentWillMount: function() {
 	var that = this;
+	var toset = {};
 	_.each(list.slice(0,8), function(u){
+	    toset[u] = <Square />;
+	});
+
+	that.setState(toset);
+	
+	_.each(list.slice(0,8), function(u){
+
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
-		toset[u] = x.responseData.feed.entries
+		var e = _.sample(x.responseData.feed.entries);
+		toset[u] = <Square href={e.link} name={e.title} text={e.contentSnippet} more={e}
+		getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
+				    console.log(x.content)}} />
 		that.setState(toset);
 	    });
-	})
-
-	
+	});	
     },
     nav: function(k,v) {
         
@@ -250,46 +259,14 @@ const App = React.createClass({
 	}
 
 	var squares = [];
-	_.each(list, function(u){
-	    if (that.state[u]) {
-		squares = _.union(squares, _.map(_.sample(that.state[u], 2), function(e){
-		    return  (
-			    <Square href={e.link} name={e.title} text={e.contentSnippet} more={e} getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-														      console.log(x.content)}}/>
-		    )
-		}))
-	    }
-	    else {
-		squares = _.union(squares, [<Square />, <Square />])
-	    }
+	_.each(that.state, function(v, u){
+	    squares = _.union(squares, [v])
 	});
-
-/*	var squares = _.shuffle(
-	    _.union(
-	    _.map(this.state.pitch, function(e){
-		return  (
-			<PitchSquare href={e.link} name={e.title} text={e.contentSnippet} more={e} />
-		)
-	    }),
-		_.map(this.state.queen, function(e){
-
-		return  (
-			<Square href={e.link} name={e.title} text={e.contentSnippet} more={e} getimgsrc={(x) => { return $($(x.content)[0]).attr('src')}}/>
-		)
-	    }),
-		_.map(this.state.huh, function(e){
-		    return (
-			    <Square href={e.link} name={e.title} text={e.contentSnippet} more={e} getimgsrc={(x) => { return $($(x.content)[0]).find('img').attr('src')}}/>
-		)
-	    })
-
-	    )
-	);*/
 
         return (
 		<div className="squares">
 		{squares}
-		</div>
+	    </div>
         );
     }
 });
@@ -314,16 +291,42 @@ const Square = React.createClass({
 	    return null;
 	}
 	var img = <img src={src} />
+            return (
+		    <div className="square">
+		    <a href={this.props.href} target="_blank">
+		    {img}
+		    <div className="text">
+		    <h2>{this.props.name}</h2>
+		    {this.props.more ? this.props.more.contentSnippet : '?'}
+		</div>
+		    </a>
+		    </div>
+            );
+    }
+});
+
+const Pic = React.createClass({
+    getInitialState: function() {
+        return {loaded:false};
+    },
+    componentWillMount: function() {
+	var that = this;
+	$('<img />')
+	    .css({position:'absolute',left:'-10000px'})
+	    .load(function(){
+		that.setState({loaded:true});
+	    }).attr({src:this.props.src});
+    },
+    nav: function(k,v) {
+        
+    },
+    render: function() {
+	var src = this.props.src;
+	if (!this.state.loaded) {
+	    src = '';
+	}
         return (
-		<div className="square">
-		<a href={this.props.href} target="_blank">
-		{img}
-		<div className="text">
-		<h2>{this.props.name}</h2>
-		{this.props.more ? this.props.more.contentSnippet : '?'}
-		</div>
-		</a>
-		</div>
+		<img src={this.props.src} />
         );
     }
 });
@@ -346,11 +349,11 @@ const PitchSquare = React.createClass({
         return (
 		<div className="square pitchsquare">
 		<a href={'http://pizi.meteor.com/artists/' + this.state.artist + '/albums/' + this.state.name +  '/tracks/'} target="_blank">
-		<img src={this.state.artwork} />
+		<Pic src={this.state.artwork} />
 		<div className="text">
 		<h2>{this.props.name}</h2>
 		{this.props.text}
-		</div>
+   	        </div>
 		</a>
 		</div>
         );
@@ -363,9 +366,11 @@ import createBrowserHistory from 'history/lib/createBrowserHistory';
 render((
 	<Router history={createBrowserHistory()}>
         <Route path="/" component={App}>
-	<Route path="/peachy" component={App}>
         </Route>
-        </Router>), document.getElementById('content'));
+	<Route path="/peachy/" component={App}>
+        </Route>
+
+    </Router>), document.getElementById('content'));
 
 
 
