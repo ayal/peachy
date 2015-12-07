@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "f9c819a3efd957e40939"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "71c59255704cfa766641"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -25206,7 +25206,7 @@
 
 
 	// module
-	exports.push([module.id, "body {\n  background: #92A8D1;\n}\n.square {\n  width: 310px;\n  display: inline-block;\n  margin: 20px;\n  background: #F7CAC9;\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px;\n}\n.square img {\n  width: 100%;\n  min-height: 200px;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .text {\n  display: none;\n  height: 100px;\n  padding: 0 10px;\n  font-family: courier;\n  font-size: 11px;\n}\n", ""]);
+	exports.push([module.id, "body {\n  background: #F7CAC9;\n}\n.square {\n  width: 310px;\n  display: inline-block;\n  margin: 20px;\n  background: #92A8D1;\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px;\n}\n.square img {\n  width: 100%;\n  min-height: 200px;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .text {\n  display: none;\n  height: 100px;\n  padding: 0 10px;\n  font-family: courier;\n  font-size: 11px;\n}\n", ""]);
 
 	// exports
 
