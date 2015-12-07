@@ -363,6 +363,7 @@ import createBrowserHistory from 'history/lib/createBrowserHistory';
 render((
 	<Router history={createBrowserHistory()}>
         <Route path="/" component={App}>
+	<Route path="/peachy" component={App}>
         </Route>
         </Router>), document.getElementById('content'));
 

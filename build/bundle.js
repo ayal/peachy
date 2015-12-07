@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "71c59255704cfa766641"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "aad8135a6f48198420ce"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -762,7 +762,7 @@
 	(0, _reactDom.render)(_react2.default.createElement(
 	    _reactRouter.Router,
 	    { history: (0, _createBrowserHistory2.default)() },
-	    _react2.default.createElement(_reactRouter.Route, { path: '/', component: App })
+	    _react2.default.createElement(_reactRouter.Route, { path: '/peachy', component: App })
 	), document.getElementById('content'));
 
 /***/ },
