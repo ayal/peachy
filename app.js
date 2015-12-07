@@ -231,7 +231,6 @@ const App = React.createClass({
 	that.setState(toset);
 	
 	_.each(list.slice(0,8), function(u){
-
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
 		var e = _.sample(x.responseData.feed.entries);
@@ -366,6 +365,8 @@ import createBrowserHistory from 'history/lib/createBrowserHistory';
 render((
 	<Router history={createBrowserHistory()}>
         <Route path="/" component={App}>
+        </Route>
+        <Route path="/index.html" component={App}>
         </Route>
 	<Route path="/peachy/" component={App}>
         </Route>

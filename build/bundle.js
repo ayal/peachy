@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "79025a659013aabe2edb"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "e0ee59849396bca51cc4"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -624,7 +624,6 @@
 	        that.setState(toset);
 
 	        _.each(list.slice(0, 8), function (u) {
-
 	            $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function (x) {
 	                var toset = {};
 	                var e = _.sample(x.responseData.feed.entries);
@@ -767,6 +766,7 @@
 	    _reactRouter.Router,
 	    { history: (0, _createBrowserHistory2.default)() },
 	    _react2.default.createElement(_reactRouter.Route, { path: '/', component: App }),
+	    _react2.default.createElement(_reactRouter.Route, { path: '/index.html', component: App }),
 	    _react2.default.createElement(_reactRouter.Route, { path: '/peachy/', component: App })
 	), document.getElementById('content'));
 
