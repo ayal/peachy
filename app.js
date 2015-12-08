@@ -1,5 +1,4 @@
 /* jsx */
-
 require("./style.less");
 import React from 'react'
 import { render } from 'react-dom'
@@ -36,6 +35,180 @@ var getalbumsfromitunes = function(e, t) {
 };
 
 var list = _.shuffle([
+    
+    'http://artruby.com/rss',
+    'http://badbananas.tumblr.com/rss',
+    'http://blackcontemporaryart.tumblr.com/rss',
+    'http://boburu.tumblr.com/rss',
+    'http://booooooom.tumblr.com/rss',
+    'http://bradypus.tumblr.com/rss',
+    'http://bremser.tumblr.com/rss',
+    'http://bryanschutmaat.tumblr.com/rss',
+    'http://contemporary-art-blog.com/rss',
+    'http://cosascool.tumblr.com/rss',
+    'http://covetarts.tumblr.com/rss',
+    'http://darksilenceinsuburbia.tumblr.com/rss',
+    'http://drawingdiary.tumblr.com/rss',
+    'http://ecrcover.tumblr.com/rss',
+    'http://eiginleiki.net/rss',
+    'http://exhibition-ism.com/rss',
+    'http://featureshoot.tumblr.com/rss',
+    'http://fecalface.tumblr.com/rss',
+    'http://floatingcosmos.tumblr.com/rss',
+    'http://folknouveau.tumblr.com/rss',
+    'http://foundinspirationmovingforward.tumblr.com/rss',
+    'http://free-parking.tumblr.com/rss',
+    'http://frntrs.tumblr.com/rss',
+    'http://fullserving.tumblr.com/rss',
+    'http://gh0stgums.com/rss',
+    'http://gills.tumblr.com/rss',
+    'http://gradientchild.tumblr.com/rss',
+    'http://grossgaians.tumblr.com/rss',
+    'http://haw-lin.com/rss',
+    'http://heathwest.tumblr.com/rss',
+    'http://heliocentrism.tumblr.com/rss',
+    'http://hifructosemag.tumblr.com/rss',
+    'http://highonyourmemories.tumblr.com/rss',
+    'http://holyurl.tumblr.com/rss',
+    'http://human-empathy.tumblr.com/rss',
+    'http://hydeordie.com/rss',
+    'http://hyperallergic.tumblr.com/rss',
+    'http://iamjapanese.tumblr.com/rss',
+    'http://iceblack.tumblr.com/rss',
+    'http://if-you-leave.tumblr.com/rss',
+    'http://iheartmyart.com/rss',
+    'http://i-love-art.tumblr.com/rss',
+    'http://inspiredbyme.tumblr.com/rss',
+    'http://inthenewfrontier.tumblr.com/rss',
+    'http://ipocrisia.tumblr.com/rss',
+    'http://jennilee.tumblr.com/rss',
+    'http://jennyannmorgan.tumblr.com/rss',
+    'http://jesuisperdu.tumblr.com/rss',
+    'http://jillsies.tumblr.com/rss',
+    'http://julianminima.tumblr.com/rss',
+    'http://juxtapozmag.tumblr.com/rss',
+    'http://killthecollector.tumblr.com/rss',
+    'http://kinetics.tumblr.com/rss',
+    'http://knowinng.tumblr.com/rss',
+    'http://krypten.tumblr.com/rss',
+    'http://kvntrn.tumblr.com/rss',
+    'http://la-beaute–de-pandore.tumblr.com/rss',
+    'http://lacma.tumblr.com/rss',
+    'http://laravissante.tumblr.com/rss',
+    'http://lepoeteborgne.tumblr.com/rss',
+    'http://leslieseuffert.tumblr.com/rss',
+    'http://letselopetoday.tumblr.com/rss',
+    'http://like-ivy.tumblr.com/rss',
+    'http://likeafieldmouse.com/rss',
+    'http://limboyouth.com/rss',
+    'http://m75.tumblr.com/rss',
+    'http://malaising.tumblr.com/rss',
+    'http://mangopopsicle.org/rss',
+    'http://mdme-x.tumblr.com/rss',
+    'http://mmday.tumblr.com/rss',
+    'http://mosslessmagazine.com/rss',
+    'http://mpdrolet.tumblr.com/rss',
+    'http://murmansea.tumblr.com/rss',
+    'http://museumoflatinamericanart.tumblr.com/rss',
+    'http://museumuesum.tumblr.com/rss',
+    'http://myampgoesto11.tumblr.com/rss',
+    'http://mydarkenedeyes.tumblr.com/rss',
+    'http://mydeadpony.tumblr.com/rss',
+    'http://nattonelli.tumblr.com/rss',
+    'http://nearlya.tumblr.com/rss',
+    'http://netanoesporno.tumblr.com/rss',
+    'http://neural-network.tumblr.com/rss',
+    'http://newodor.tumblr.com/rss',
+    'http://nopefun.com/rss',
+    'http://nothingwritten.com/rss',
+    'http://nyctaeus.tumblr.com/rss',
+    'http://objectstatus.tumblr.com/rss',
+    'http://oftheafternoon.com/rss',
+    'http://oldhorse.tumblr.com/rss',
+    'http://oneforeverywish.tumblr.com/rss',
+    'http://onepainting.tumblr.com/rss',
+    'http://oxane.tumblr.com/rss',
+    'http://paper-journal.tumblr.com/rss',
+    'http://partyswetzs.tumblr.com/rss',
+    'http://photographersdirectory.tumblr.com/rss',
+    'http://photographsonthebrain.com/rss',
+    'http://planetaryfolklore.tumblr.com/rss',
+    'http://pleasexcusethemess.tumblr.com/rss',
+    'http://plotsummary.tumblr.com/rss',
+    'http://postpatternism.tumblr.com/rss',
+    'http://pulmonaire.tumblr.com/rss',
+    'http://raakha.tumblr.com/rss',
+    'http://razorshapes.tumblr.com/rss',
+    'http://readingforms.com/rss',
+    'http://robotscrytoo.com/rss',
+    'http://rocketscience.tumblr.com/rss',
+    'http://ronulicny.tumblr.com/rss',
+    'http://roomdark.tumblr.com/rss',
+    'http://rustybreak.tumblr.com/rss',
+    'http://ryandonato.com/rss',
+    'http://sculptores.tumblr.com/rss',
+    'http://sculpture-center.tumblr.com/rss',
+    'http://selektormagazine.tumblr.com/rss',
+    'http://self-romance.tumblr.com/rss',
+    'http://semihlakerta.tumblr.com/rss',
+    'http://sensitive.tumblr.com/rss',
+    'http://septagonstudios.tumblr.com/rss',
+    'http://sewerscape.tumblr.com/rss',
+    'http://sfmoma.tumblr.com/rss',
+    'http://shanellpapp.tumblr.com/rss',
+    'http://shootinggallery.tumblr.com/rss',
+    'http://showslow.tumblr.com/rss',
+    'http://smalljoke.tumblr.com/rss',
+    'http://snowce.tumblr.com/rss',
+    'http://somedisordered.tumblr.com/rss',
+    'http://somethingsforyoutolookat.tumblr.com/rss',
+    'http://somewhatreal.tumblr.com/rss',
+    'http://sonicteeth.tumblr.com/rss',
+    'http://spatula.tumblr.com/rss',
+    'http://spraybeast.tumblr.com/rss',
+    'http://staged-photography.tumblr.com/rss',
+    'http://starbucks-fauxhemian.tumblr.com/rss',
+    'http://stream.fm-a.dk/rss',
+    'http://supermaxpro.tumblr.com/rss',
+    'http://supersonicelectronic.com/rss',
+    'http://technolowgy.tumblr.com/rss',
+    'http://the-coven.tumblr.com/rss',
+    'http://the-drawing-center.tumblr.com/rss',
+    'http://the-social-collective.tumblr.com/rss',
+    'http://thecreatorsproject.tumblr.com/rss',
+    'http://theformdeform.tumblr.com/rss',
+    'http://thegetty.tumblr.com/rss',
+    'http://theglaze.tumblr.com/rss',
+    'http://theheavycollective.com/rss',
+    'http://theholydeer.tumblr.com/rss',
+    'http://thejogging.tumblr.com/rss',
+    'http://theonlymagicleftisart.com/rss',
+    'http://thephotographicimage.tumblr.com/rss',
+    'http://thepoeticphotographycollection.tumblr.com/rss',
+    'http://thequandary.tumblr.com/rss',
+    'http://thesearenicephotos.tumblr.com/rss',
+    'http://thisisacult.org/rss',
+    'http://thisisnthappiness.com/rss',
+    'http://timelightbox.tumblr.com/rss',
+    'http://toutpetitlaplanete.tumblr.com/rss',
+    'http://turbofolk.tumblr.com/rss',
+    'http://uhohgallery.tumblr.com/rss',
+    'http://unknowneditors.tumblr.com/rss',
+    'http://unseentactics.tumblr.com/rss',
+    'http://untrustyou.tumblr.com/rss',
+    'http://upandcomingart.tumblr.com/rss',
+    'http://victimize.tumblr.com/rss',
+    'http://vinkelret.tumblr.com/rss',
+    'http://visual-poetry.tumblr.com/rss',
+    'http://visualhunt.tumblr.com/rss',
+    'http://voodoovoodoo.tumblr.com/rss',
+    'http://wandering-bears.tumblr.com/rss',
+    'http://welgevormd.com/rss',
+    'http://whitneymuseum.tumblr.com/rss',
+    'http://wowgreat.tumblr.com/rss',
+    'http://wvdv.tumblr.com/rss',
+    'http://wwwalk.tumblr.com/rss',
+    'http://zzzzoom.tumblr.com/rss',
     'http://artruby.com/rss',
     'http://badbananas.tumblr.com/rss',
     'http://blackcontemporaryart.tumblr.com/rss',
@@ -224,20 +397,23 @@ const App = React.createClass({
     componentWillMount: function() {
 	var that = this;
 	var toset = {};
-	_.each(list.slice(0,12), function(u){
+	var chosen = [list[0], 'http://www.huhmagazine.co.uk/blog/rss/feed.php', 'http://feeds2.feedburner.com/itsnicethat/SlXC', ...list.slice(1,8)];
+	_.each(chosen, function(u){
 	    toset[u] = <Square />;
 	});
 
 	that.setState(toset);
 	
-	_.each(list.slice(0,8), function(u){
+	_.each(chosen, function(u){
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
 		var e = _.sample(x.responseData.feed.entries);
-		toset[u] = <Square href={e.link} name={e.title} text={e.contentSnippet} more={e}
-		getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-				    console.log(x.content)}} />
-		that.setState(toset);
+		if (e) {
+		    toset[u] = <Square href={e.link} name={e.title} text={e.title} more={e}
+		    getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
+					console.log(x.content)}} />
+			that.setState(toset);
+		}
 	    });
 	});	
     },
@@ -289,14 +465,12 @@ const Square = React.createClass({
 	if (!src) {
 	    return null;
 	}
-	var img = <img src={src} />
             return (
 		    <div className="square">
 		    <a href={this.props.href} target="_blank">
-		    {img}
+		    <Pic src={src} />
 		    <div className="text">
 		    <h2>{this.props.name}</h2>
-		    {this.props.more ? this.props.more.contentSnippet : '?'}
 		</div>
 		    </a>
 		    </div>
@@ -319,13 +493,16 @@ const Pic = React.createClass({
     nav: function(k,v) {
         
     },
+    onload: function() {
+	$(this.refs.img).animate({opacity:1});
+    },
     render: function() {
 	var src = this.props.src;
 	if (!this.state.loaded) {
 	    src = '';
 	}
         return (
-		<img src={this.props.src} />
+		<img src={this.props.src} style={{opacity:0}} onLoad={this.onload} ref="img" />
         );
     }
 });
@@ -346,15 +523,7 @@ const PitchSquare = React.createClass({
     },
     render: function() {
         return (
-		<div className="square pitchsquare">
-		<a href={'http://pizi.meteor.com/artists/' + this.state.artist + '/albums/' + this.state.name +  '/tracks/'} target="_blank">
-		<Pic src={this.state.artwork} />
-		<div className="text">
-		<h2>{this.props.name}</h2>
-		{this.props.text}
-   	        </div>
-		</a>
-		</div>
+	    null
         );
     }
 });
