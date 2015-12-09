@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "7b1cc7f11cfae7402d05"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "e00d8100334e32251767"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -579,17 +579,17 @@
 	__webpack_require__(214);
 
 	window.softclean = function (e, t) {
-	    return e.replace(/"/gim, '').replace(/:/gim, '').split('ft')[0];
+	    return e.replace(/"/gim, '').replace(/:/gim, '').split('ft')[0].split(' - ')[0];
 	};
 
 	window.clean = function (e, t) {
-	    return t ? e ? e.toLowerCase().replace(/"/gim, '').split('ft')[0].replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "" : e ? e.toLowerCase().replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/\(.*?\)/gim, "").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "";
+	    return t ? e ? e.toLowerCase().replace(/"/gim, '').split(' - ')[0].split('ft')[0].replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "" : e ? e.toLowerCase().replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/\(.*?\)/gim, "").replace(/\[.*?\]/gim, "").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "";
 	};
 
 	// term, cb
 	var gettracksfromitunes = function gettracksfromitunes(t, n) {
 	    console.log('getting track', t, softclean(t));
-	    $.getJSON("//itunes.apple.com/search?term=" + encodeURIComponent(softclean(t)) + "&limit=25&media=music&entity=musicTrack&callback=?", function (r) {
+	    $.getJSON("https://itunes.apple.com/search?term=" + encodeURIComponent(softclean(t)) + "&limit=25&media=music&entity=musicTrack&callback=?", function (r) {
 	        console.log(r);
 	        var i = $.map(r.results, function (n) {
 	            return !clean(t).match(clean(n.trackName)) || "" === t.trim() || !clean(t).match(clean(n.artistName)) ? null : {
