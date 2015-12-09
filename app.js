@@ -5,10 +5,32 @@ import { render } from 'react-dom'
 require('lodash');
 import { Router, Route, Link, History, Lifecycle } from 'react-router';
 
+window.softclean = function(e, t) {
+    return e.replace(/"/gim, '').replace(/:/gim, '').split('ft')[0];
+}
 
 window.clean = function(e, t) {
-    return t ? e ? e.toLowerCase().replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "" : e ? e.toLowerCase().replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/\(.*?\)/gim, "").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : ""
+    return t ? e ? e.toLowerCase().replace(/"/gim, '').split('ft')[0].replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : "" : e ? e.toLowerCase().replace(/^the\s|\sthe\s|\sand\s| ep$/gim, " ").replace(/\(.*?\)/gim, "").replace(/part/gim, "pt").replace(RegExp("[^\\p{L}a-zA-Z0-9]", "gim"), "").replace("around", "round").trim(" ") : ""
 }
+
+// term, cb
+var gettracksfromitunes = function(t, n) {
+    console.log('getting track', t, softclean(t));
+    $.getJSON("//itunes.apple.com/search?term=" + encodeURIComponent(softclean(t)) + "&limit=25&media=music&entity=musicTrack&callback=?", function(r) {
+	console.log(r);
+        var i = $.map(r.results, function(n) {
+            return (!clean(t).match(clean(n.trackName)) || "" === t.trim() || !clean(t).match(clean(n.artistName))) ? null  : {
+                name: n.trackName,
+                artist: n.artistName,
+                album: n.collectionName,
+                trackNumber: n.trackNumber,
+		artwork: n.artworkUrl100.replace('100x100', '300x300'),
+            }
+        });
+        n(i)
+    });
+};
+
 
 var getalbumsfromitunes = function(e, t) {
     $.getJSON("//itunes.apple.com/search?term=" + encodeURIComponent(e) + "&limit=25&media=music&entity=album&callback=?", function(n) {
@@ -35,7 +57,6 @@ var getalbumsfromitunes = function(e, t) {
 };
 
 var list = _.shuffle([
-    
     'http://artruby.com/rss',
     'http://badbananas.tumblr.com/rss',
     'http://blackcontemporaryart.tumblr.com/rss',
@@ -387,7 +408,8 @@ var list = _.shuffle([
     'http://freedompoopshine.tumblr.com/rss',
     'http://elizamayn.tumblr.com/rss',
     'http://noworkonsunday.com/rss',
-    'http://andersholmbergarkitekter.tumblr.com/rss']);
+    'http://andersholmbergarkitekter.tumblr.com/rss',
+    'http://tropical-moonlight.tumblr.com/rss']);
 
 const App = React.createClass({
     mixins: [ Lifecycle, History ],
@@ -397,9 +419,14 @@ const App = React.createClass({
     componentWillMount: function() {
 	var that = this;
 	var toset = {};
-	var chosen = [list[0], 'http://www.huhmagazine.co.uk/blog/rss/feed.php', 'http://feeds2.feedburner.com/itsnicethat/SlXC', ...list.slice(1,8)];
+	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/', list[0], 'http://www.huhmagazine.co.uk/blog/rss/feed.php', 'http://feeds2.feedburner.com/itsnicethat/SlXC', ...list.slice(1,8)];
 	_.each(chosen, function(u){
-	    toset[u] = <Square />;
+	    if (u.match('pitchfork')) {
+		toset[u] = <PitchSquare />;
+	    }
+	    else {
+		toset[u] = <Square />;
+	    }
 	});
 
 	that.setState(toset);
@@ -409,13 +436,22 @@ const App = React.createClass({
 		var toset = {};
 		var e = _.sample(x.responseData.feed.entries);
 		if (e) {
-		    toset[u] = <Square href={e.link} name={e.title} text={e.title} more={e}
-		    getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-					console.log(x.content)}} />
-			that.setState(toset);
+		    if (u.match('pitchfork')) {
+			toset[u] = <PitchSquare href={e.link} name={e.title} text={e.title} more={e}
+			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
+					    console.log(x.content)}} />
+			    that.setState(toset);
+
+		    }
+		    else {
+			toset[u] = <Square href={e.link} name={e.title} text={e.title} more={e}
+			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
+					    console.log(x.content)}} />
+			    that.setState(toset);
+		    }
 		}
 	    });
-	});	
+	});
     },
     nav: function(k,v) {
         
@@ -512,18 +548,33 @@ const PitchSquare = React.createClass({
     getInitialState: function() {
         return {};
     },
-    componentWillMount: function() {
+    componentWillMount: function(ps) {
+	ps = ps || this.props;
 	var that = this;
-	getalbumsfromitunes(this.props.name, function(x){
-	    x && x[0] && that.setState(x[0]);
-	});
+	if (ps.name) {
+	    gettracksfromitunes(ps.name, function(x){
+		console.log('from', ps.name, 'got', x);
+		x && x[0] && that.setState(x[0]);
+	    });
+	}
+    },
+    componentWillReceiveProps: function(p) {
+	this.componentWillMount(p);
     },
     nav: function(k,v) {
         
     },
     render: function() {
-        return (
-	    null
+	    return (
+		    <div className="square pitchsquare">
+		    <a href={this.props.href} target="_blank">
+		    <Pic src={this.state.artwork} />
+		    <div className="text">
+		    <h2>~ MUZIQUE ~ {this.props.name}</h2>
+		    </div>
+		    </a>
+		    </div>
+
         );
     }
 });
