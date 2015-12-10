@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Peachy",
     "description": "Sweet Stuff",
-    "version": "1.0.0.5",
+    "version": "1.0.0.8",
     "chrome_url_overrides" : {
 	"newtab": "index.html"
     },
@@ -16,5 +16,5 @@
     "background": {
 	"scripts": ["jquery.min.js", "background.js"]
     },
-    "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+    "content_security_policy": "script-src 'self' https://ajax.googleapis.com https://www.googleapis.com https://itunes.apple.com; object-src 'self'"
 }
