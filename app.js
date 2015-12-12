@@ -235,7 +235,9 @@ var getalbumsfromitunes = function(e, t) {
     })
 };
 
-var list = _.shuffle([
+var list =[
+    'https://www.pinterest.com/yaelrasner/feed.rss',
+    'http://httpjasmin.tumblr.com/',
     'http://artruby.com/rss',
     'http://badbananas.tumblr.com/rss',
     'http://blackcontemporaryart.tumblr.com/rss',
@@ -594,7 +596,23 @@ var list = _.shuffle([
     'http://tonecon.es/rss',
     'http://human-empathy.tumblr.com/rss',
     'http://thekiko.tumblr.com/rss',
-    'http://thenletitbe.tumblr.com/rss']);
+    'http://thenletitbe.tumblr.com/rss',
+    'http://www.somewhereiwouldliketolive.com/feeds/posts/default',
+    'http://www.missmoss.co.za/feed/'];
+
+var listpick = function() {
+    var x = new Date()
+    var arr = [];
+    for (var i =0; i < 8; i++) {
+	arr.push(list[(x.getMinutes() * x.getHours() + i) % list.length]);
+    }
+    return arr;
+};
+
+var feedpick = function(feed) {
+    var x = new Date()
+    return feed[(x.getMinutes() * x.getHours()) % feed.length];
+};
 
 const App = React.createClass({
     mixins: [ Lifecycle, History ],
@@ -604,7 +622,14 @@ const App = React.createClass({
     componentWillMount: function() {
 	var that = this;
 	var toset = {};
-	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/', list[0], 'http://www.huhmagazine.co.uk/blog/rss/feed.php', 'http://feeds2.feedburner.com/itsnicethat/SlXC', ...list.slice(1,8)];
+	var picked = listpick();
+
+	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/',
+		      picked[0],
+		      'http://www.huhmagazine.co.uk/blog/rss/feed.php',
+		      'http://feeds2.feedburner.com/itsnicethat/SlXC',
+		      ...picked.slice(1)];
+	
 	_.each(chosen, function(u){
 	    if (u.match('pitchfork')) {
 		toset[u] = <PitchSquare />;
@@ -619,7 +644,7 @@ const App = React.createClass({
 	_.each(chosen, function(u){
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
-		var e = _.sample(x.responseData.feed.entries);
+		var e = feedpick(x.responseData.feed.entries);
 		if (e) {
 		    if (u.match('pitchfork')) {
 
