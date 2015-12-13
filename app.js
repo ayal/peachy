@@ -4,6 +4,20 @@ import React from 'react'
 import { render } from 'react-dom'
 require('lodash');
 import { Router, Route, Link, History, Lifecycle } from 'react-router';
+var Trianglify = require('trianglify');
+
+window.triangles = function(){
+    $(function(){
+	var content = $('#content');
+	var pattern = Trianglify({
+	    width: 300,
+	    height: 300,
+	    x_colors: 'PuRd'
+	});
+	content.append($('img').attr('src', pattern.png()))
+    })
+
+};
 
 window.softclean = function(e, t) {
     return e.replace(/\./gim,'').replace(/"/gim, '').replace(/:/gim, '').split('ft')[0].split(' - ')[0];
@@ -14,182 +28,182 @@ window.clean = function(e, t) {
 }
 
 var fetchFromPipe = function(tracks) {
-	var hash = [];
+    var hash = [];
 
 
-	var vidreadiez = [];
+    var vidreadiez = [];
 
-	$.each(tracks, function(trki, trk) {
-	    if (!trk.name || !trk.artist) {
-		console.log('no track name or artists');
-		return;
-	    }
-	    var cleantrk = window.clean(trk.name);
-	    if (cleantrk === 'length') {
-		return;
-	    }
+    $.each(tracks, function(trki, trk) {
+	if (!trk.name || !trk.artist) {
+	    console.log('no track name or artists');
+	    return;
+	}
+	var cleantrk = window.clean(trk.name);
+	if (cleantrk === 'length') {
+	    return;
+	}
 
-	    var vidready = $.Deferred();
-	    vidreadiez.push(vidready);
+	var vidready = $.Deferred();
+	vidreadiez.push(vidready);
 
-	    trk.artist = trk.artist.replace(' / ', ' & ').replace(/&/gim, 'and');
+	trk.artist = trk.artist.replace(' / ', ' & ').replace(/&/gim, 'and');
 
-	    var song = cleantrk.length > 30 ? trk.name : (trk.artist.toLowerCase() + ' ' + trk.name.toLowerCase());
-	    if (window.accurate) {
-		song += ' ' + trk.album;
-	    }
-	    
-//	    var req = $.getJSON('https://gdata.youtube.com/feeds/api/videos?q=' + encodeURIComponent(song) + '&safeSearch=none&orderby=relevance&max-results=15&v=2&alt=json&callback=?', function(e) {
-	    var req = $.getJSON('https://www.googleapis.com/youtube/v3/search?part=snippet&safeSearch=none&max-results=15&key=AIzaSyDmfdow0Soqa6o_Vg-JG2Hcg11Bzrm2Vgk&type=video&q=' + encodeURIComponent(song) + '&callback=?', function(e) {
+	var song = cleantrk.length > 30 ? trk.name : (trk.artist.toLowerCase() + ' ' + trk.name.toLowerCase());
+	if (window.accurate) {
+	    song += ' ' + trk.album;
+	}
+	
+	//	    var req = $.getJSON('https://gdata.youtube.com/feeds/api/videos?q=' + encodeURIComponent(song) + '&safeSearch=none&orderby=relevance&max-results=15&v=2&alt=json&callback=?', function(e) {
+	var req = $.getJSON('https://www.googleapis.com/youtube/v3/search?part=snippet&safeSearch=none&max-results=15&key=AIzaSyDmfdow0Soqa6o_Vg-JG2Hcg11Bzrm2Vgk&type=video&q=' + encodeURIComponent(song) + '&callback=?', function(e) {
 
 
-/*		if (!e.feed.entry || e.feed.entry.length === 0) {
-		    //					   console.log('empty. resolving');
-		    vidready.resolve();
+	    /*		if (!e.feed.entry || e.feed.entry.length === 0) {
+	    //					   console.log('empty. resolving');
+	    vidready.resolve();
+	    return;
+	    }*/
+
+	    var lessgood = {};
+
+	    $.each(e.items, function(i, entry){
+		if (vidready.state() === 'resolved') {
 		    return;
-		}*/
+		}
 
-		var lessgood = {};
+		var cleanYTitle = window.clean(entry.snippet.title);
+		var cleanartist = window.clean(trk.artist);
 
-		$.each(e.items, function(i, entry){
-		    if (vidready.state() === 'resolved') {
-			return;
-		    }
+		var id = entry.id.videoId;
+		var vidobj = {
+		    order: trki,
+		    id: id,
+		    who_shared: 'takashirgb',
+		    fromindie: true,
+		    player: 'yt',
+		    name: trk.name,
+		    artist: trk.artist,
+		    albums: trk.album,
+		    viewCount: 0};
 
-		    var cleanYTitle = window.clean(entry.snippet.title);
-		    var cleanartist = window.clean(trk.artist);
+		function nogood(what, score, force) {
+		    var rwhat = new RegExp(what);
+		    if ((entry.snippet.title.toLowerCase().match(rwhat) ||
+			 entry.snippet.description.toLowerCase().match(rwhat)) &&
+			!trk.name.toLowerCase().match(rwhat)) {
 
-		    var id = entry.id.videoId;
-		    var vidobj = {
-			order: trki,
-			id: id,
-			who_shared: 'takashirgb',
-			fromindie: true,
-			player: 'yt',
-			name: trk.name,
-			artist: trk.artist,
-			albums: trk.album,
-			viewCount: 0};
-
-		    function nogood(what, score, force) {
-			var rwhat = new RegExp(what);
-			if ((entry.snippet.title.toLowerCase().match(rwhat) ||
-			     entry.snippet.description.toLowerCase().match(rwhat)) &&
-			    !trk.name.toLowerCase().match(rwhat)) {
-
-			    var already = lessgood[cleantrk];
-			    if (!already || score > already.s || force){
-				lessgood[cleantrk] = {s: score || 0, o: vidobj};   
-			    }
-
-			    console.log('its a ' + what, 'srch:',
-					song,
-					'you said: ',
-					cleanartist,
-					cleantrk,
-					'tube said',
-					cleanYTitle);
-			    return true;
+			var already = lessgood[cleantrk];
+			if (!already || score > already.s || force){
+			    lessgood[cleantrk] = {s: score || 0, o: vidobj};   
 			}
-			return false;
-		    };
-		    
 
-		    var superclean = window.clean(entry.snippet.title, true).replace(cleantrk, '')
-			.replace(cleanartist, '')
-			.replace('new', '')
-			.replace('album', '')
-			.replace('lyrics','')
-			.replace('hd','')
-			.replace(/\d+p/gim,'')
-			.replace(window.clean(trk.album), '');
-
-		   
-
-
-		/*    if (superclean.length > 20){
-			console.log('too many guys', 'srch:',
+			console.log('its a ' + what, 'srch:',
 				    song,
 				    'you said: ',
 				    cleanartist,
 				    cleantrk,
 				    'tube said',
 				    cleanYTitle);
-			return;
+			return true;
+		    }
+		    return false;
+		};
+		
 
-		    }*/
+		var superclean = window.clean(entry.snippet.title, true).replace(cleantrk, '')
+		    .replace(cleanartist, '')
+		    .replace('new', '')
+		    .replace('album', '')
+		    .replace('lyrics','')
+		    .replace('hd','')
+		    .replace(/\d+p/gim,'')
+		    .replace(window.clean(trk.album), '');
 
-		    if (cleanYTitle.indexOf(cleantrk.replace(/s$/gim, '')) === -1) {
-			console.log('no title.', 'srch:',
+		
+
+
+		/*    if (superclean.length > 20){
+		      console.log('too many guys', 'srch:',
+		      song,
+		      'you said: ',
+		      cleanartist,
+		      cleantrk,
+		      'tube said',
+		      cleanYTitle);
+		      return;
+
+		      }*/
+
+		if (cleanYTitle.indexOf(cleantrk.replace(/s$/gim, '')) === -1) {
+		    console.log('no title.', 'srch:',
+				song,
+				'you said: ',
+				cleantrk,
+				'tube said',
+				cleanYTitle);
+		    return;
+		}
+
+		/*		    if (cleanYTitle.indexOf(cleanartist) === -1) {
+				    var nothing = true;
+				    $.each(entry.category,function(i, tag){
+				    if (window.clean(tag.term).indexOf(cleanartist) !== -1){
+				    nothing = false;
+				    }
+				    });
+				    
+				    if (nothing && cleantrk.length < 10) {
+				    console.log('no artist.', 'srch:',
 				    song,
 				    'you said: ',
+				    cleanartist,
 				    cleantrk,
 				    'tube said',
 				    cleanYTitle);
-			return;
-		    }
+				    return;
+				    }
+				    }*/
 
-/*		    if (cleanYTitle.indexOf(cleanartist) === -1) {
-			var nothing = true;
-			$.each(entry.category,function(i, tag){
-			    if (window.clean(tag.term).indexOf(cleanartist) !== -1){
-				nothing = false;
-			    }
-			});
-			
-			if (nothing && cleantrk.length < 10) {
-			    console.log('no artist.', 'srch:',
-					song,
-					'you said: ',
-					cleanartist,
-					cleantrk,
-					'tube said',
-					cleanYTitle);
-			    return;
-			}
-		    }*/
-
-                    //nogood('version')
-		    if (nogood('@ the', 2) || nogood('at the', 1) || nogood('from the basement', 1) ||
-			nogood('acoustic', 1) || nogood('thumbs') || nogood('concert') || nogood('explains') ||
-			nogood('teaser') || nogood('session', 1) || nogood('cover') || nogood('remix') ||
-			nogood('live', 1) || nogood('perform', 2) || nogood('version', 3) ||
-			nogood('philhar') || nogood('\\d{1,2}[\\.-/]\\d{1,2}', 0, true)) {
-			return;
-		    }
-
-/*		    if (entry.media$group.media$content[0].duration < 40) {
-			return;
-		    }
-*/
-
-		    vidready.resolve(vidobj);
+                //nogood('version')
+		if (nogood('@ the', 2) || nogood('at the', 1) || nogood('from the basement', 1) ||
+		    nogood('acoustic', 1) || nogood('thumbs') || nogood('concert') || nogood('explains') ||
+		    nogood('teaser') || nogood('session', 1) || nogood('cover') || nogood('remix') ||
+		    nogood('live', 1) || nogood('perform', 2) || nogood('version', 3) ||
+		    nogood('philhar') || nogood('\\d{1,2}[\\.-/]\\d{1,2}', 0, true)) {
 		    return;
-
-		});
-
-		var lesskeys = _.keys(lessgood);
-		if (vidready.state() !== 'resolved' && lesskeys.length) {
-		    vidready.resolve(lessgood[lesskeys[0]].o);
 		}
 
-		vidready.resolve();   
+		/*		    if (entry.media$group.media$content[0].duration < 40) {
+				    return;
+				    }
+		*/
+
+		vidready.resolve(vidobj);
+		return;
 
 	    });
 
-	    $.when(req).fail(function() {
-		vidready.resolve();
-	    });
+	    var lesskeys = _.keys(lessgood);
+	    if (vidready.state() !== 'resolved' && lesskeys.length) {
+		vidready.resolve(lessgood[lesskeys[0]].o);
+	    }
 
+	    vidready.resolve();   
 
-
-	    setTimeout(
-
-		function() {
-		    vidready.resolve();
-		}, 5000);
 	});
-	return vidreadiez;
+
+	$.when(req).fail(function() {
+	    vidready.resolve();
+	});
+
+
+
+	setTimeout(
+
+	    function() {
+		vidready.resolve();
+	    }, 5000);
+    });
+    return vidreadiez;
 };
 
 // term, cb
@@ -712,44 +726,48 @@ const Square = React.createClass({
 	if (!src) {
 	    return null;
 	}
-            return (
-		    <div className="square">
-		    <a href={this.props.href} target="_blank">
-		    <Pic src={src} />
-		    <div className="text">
-		    <h2>{this.props.name}</h2>
+        return (
+		<div className="square">
+		<a href={this.props.href} target="_blank">
+		<Pic src={src} />
+		<div className="text">
+		<h2>{this.props.name}</h2>
 		</div>
-		    </a>
-		    </div>
-            );
+		</a>
+		</div>
+        );
     }
 });
 
 const Pic = React.createClass({
     getInitialState: function() {
-        return {loaded:false};
+        return {opacity:0};
     },
     componentWillMount: function() {
 	var that = this;
 	$('<img />')
 	    .css({position:'absolute',left:'-10000px'})
 	    .load(function(){
-		that.setState({loaded:true});
+		that.setState({opacity:1, src:'triangles.png'});
+	    }).attr({src:'triangles.png'});
+
+	$('<img />')
+	    .css({position:'absolute',left:'-10000px'})
+	    .load(function(){
+		var img = this;
+		that.setState({opacity:0});
+		setTimeout(function(){
+		    that.setState({opacity:1,src:that.props.src,width: $(img).width(),height: $(img).height()});
+		},1000)
 	    }).attr({src:this.props.src});
     },
     nav: function(k,v) {
         
     },
-    onload: function() {
-	$(this.refs.img).animate({opacity:1});
-    },
     render: function() {
-	var src = this.props.src;
-	if (!this.state.loaded) {
-	    src = '';
-	}
+	var src = this.state.src;
         return (
-		<img src={this.props.src} style={{opacity:0}} onLoad={this.onload} ref="img" />
+		<img src={src} style={{opacity:this.state.opacity,transition:'all 1s ease'}} ref="img" />
         );
     }
 });
@@ -784,16 +802,16 @@ const PitchSquare = React.createClass({
 	if (this.state.pipe) {
 	    link = <a className="pipe" target="_blank" href={"https://youtube.com/watch?v=" + this.state.pipe.id}>possible youtube link</a>;
 	}
-	    return (
-		    <div className="square pitchsquare">
-		    <a href={this.props.href} target="_blank">
-		    <Pic src={this.state.artwork} />
-		    <div className="text">
-		    <h2>~ MUZIQUE ~ {this.props.name}</h2>
-		    </div>
-		    </a>
-		    {link} 
-		    </div>
+	return (
+		<div className="square pitchsquare">
+		<a href={this.props.href} target="_blank">
+		<Pic src={this.state.artwork} />
+		<div className="text">
+		<h2>~ MUZIQUE ~ {this.props.name}</h2>
+		</div>
+		</a>
+		{link} 
+	    </div>
 
         );
     }
