@@ -266,7 +266,7 @@ var list =[
     'http://mosslessmagazine.com/rss',
     'http://www.manystuff.org/?feed=rss2',
     'https://www.pinterest.com/yaelrasner/feed.rss',
-    'http://httpjasmin.tumblr.com/',
+    'http://httpjasmin.tumblr.com/rss',
     'http://artruby.com/rss',
     'http://badbananas.tumblr.com/rss',
     'http://blackcontemporaryart.tumblr.com/rss',
@@ -629,7 +629,7 @@ var list =[
 var listpick = function() {
     var x = new Date()
     var arr = [];
-    for (var i =0; i < 8; i++) {
+    for (var i =0; i < 30; i++) {
 	arr.push(list[(x.getMinutes() * x.getHours() + i) % list.length]);
     }
     return arr;
@@ -653,7 +653,7 @@ const App = React.createClass({
 	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/',
 		      picked[0],
 		      'http://www.huhmagazine.co.uk/blog/rss/feed.php',
-		      picked[1]
+		      picked[1],
 		      'http://feeds2.feedburner.com/itsnicethat/SlXC',
 		      ...picked.slice(2)];
 	
