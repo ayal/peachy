@@ -645,10 +645,10 @@ const App = React.createClass({
 	
 	_.each(chosen, function(u){
 	    if (u.match('pitchfork')) {
-		toset[u] = <PitchSquare />;
+		toset[u] = <PitchSquare key={u} />;
 	    }
 	    else {
-		toset[u] = <Square />;
+		toset[u] = <Square key={u} />;
 	    }
 	});
 
@@ -657,22 +657,36 @@ const App = React.createClass({
 	_.each(chosen, function(u){
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
-		var e = feedpick(x.responseData.feed.entries);
+		if (!x.responseData) {
+		    console.warn('no response data for', u);
+		    return;
+		}
+		var e = feedpick(_.filter(x.responseData.feed.entries, function(x){
+		    var days = (new Date() - new Date(x.publishedDate)) / 1000 / 60 / 60 / 24;
+		    if (days < 15) {
+			return true;
+		    }
+		}));
+		
 		if (e) {
 		    if (u.match('pitchfork')) {
-
 			toset[u] = <PitchSquare href={e.link} name={e.title} text={e.title} more={e}
 			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-					    console.log(x.content)}} />
+					    console.warn('no image', x)}} key={u} />
 			    that.setState(toset);
 
 		    }
 		    else {
 			toset[u] = <Square href={e.link} name={e.title} text={e.title} more={e}
 			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-					    console.log(x.content)}} />
+					    console.warn('no image', x)}} key={u} />
 			    that.setState(toset);
 		    }
+		}
+		else {
+		    toset[u] = null;
+		    that.setState(toset);
+
 		}
 	    });
 	});
@@ -766,10 +780,13 @@ const Pic = React.createClass({
 	    $('<img />')
 		.css({position:'absolute',left:'-10000px'})
 		.load(function(){
+		    if (!that.isMounted()) {
+			return;
+		    }
 		    var img = this;
+
 		    that.setState({opacity:0});
 		    setTimeout(function(){
-			console.warn('updating pic', nprops.src)
 			that.setState({opacity:1,src:nprops.src,width: $(img).width(),height: $(img).height()});
 		    },1000)
 		}).attr({src:nprops.src});
@@ -797,6 +814,7 @@ const PitchSquare = React.createClass({
 	if (ps.name) {
 	    gettracksfromitunes(ps.name, function(x){
 		console.log('from', ps.name, 'got', x);
+		var topipe = x || [{artist: ps.name.split(': ')[0], name: ps.name.split(': ')[1], album:''}];
 		$.when.apply($, fetchFromPipe(x)).done(function(r){
 		    console.log('from pipe!', r)
 		    that.setState({pipe: r})
