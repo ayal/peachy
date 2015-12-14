@@ -556,7 +556,6 @@ var list =[
     'http://spatula.tumblr.com/rss',
     'http://spraybeast.tumblr.com/rss',
     'http://staged-photography.tumblr.com/rss',
-    'http://starbucks-fauxhemian.tumblr.com/rss',
     'http://stream.fm-a.dk/rss',
     'http://supermaxpro.tumblr.com/rss',
     'http://supersonicelectronic.com/rss',
@@ -723,9 +722,6 @@ const Square = React.createClass({
     },
     render: function() {
 	var src = this.getImgSrcFromContent();
-	if (!src) {
-	    return null;
-	}
         return (
 		<div className="square">
 		<a href={this.props.href} target="_blank">
@@ -751,15 +747,33 @@ const Pic = React.createClass({
 		that.setState({opacity:1, src:'triangles.png'});
 	    }).attr({src:'triangles.png'});
 
-	$('<img />')
-	    .css({position:'absolute',left:'-10000px'})
-	    .load(function(){
-		var img = this;
-		that.setState({opacity:0});
-		setTimeout(function(){
-		    that.setState({opacity:1,src:that.props.src,width: $(img).width(),height: $(img).height()});
-		},1000)
-	    }).attr({src:this.props.src});
+	if (this.props.src) {
+	    $('<img />')
+		.css({position:'absolute',left:'-10000px'})
+		.load(function(){
+		    var img = this;
+		    that.setState({opacity:0});
+		    setTimeout(function(){
+			that.setState({opacity:1,src:that.props.src,width: $(img).width(),height: $(img).height()});
+		    },1000)
+		}).attr({src:this.props.src});
+	}
+    },
+    componentWillUpdate: function(nprops) {
+	var that =this;
+	
+	if (this.props.src !== nprops.src) {
+	    $('<img />')
+		.css({position:'absolute',left:'-10000px'})
+		.load(function(){
+		    var img = this;
+		    that.setState({opacity:0});
+		    setTimeout(function(){
+			console.warn('updating pic', nprops.src)
+			that.setState({opacity:1,src:nprops.src,width: $(img).width(),height: $(img).height()});
+		    },1000)
+		}).attr({src:nprops.src});
+	}
     },
     nav: function(k,v) {
         
@@ -787,7 +801,12 @@ const PitchSquare = React.createClass({
 		    console.log('from pipe!', r)
 		    that.setState({pipe: r})
 		});
-		x && x[0] && that.setState(x[0]);
+		if (x && x[0]) {
+		    that.setState(x[0]);
+		}
+		else {
+		    that.setState({artwork:'triangles.png'});
+		}
 	    });
 	}
     },
@@ -800,12 +819,14 @@ const PitchSquare = React.createClass({
     render: function() {
 	var link = null;
 	if (this.state.pipe) {
-	    link = <a className="pipe" target="_blank" href={"https://youtube.com/watch?v=" + this.state.pipe.id}>possible youtube link</a>;
+	    link = <a className="pipe" target="_blank" href={"https://youtube.com/watch?v=" + this.state.pipe.id}>listen on youtube</a>;
 	}
+	var img = <Pic src={this.state.artwork} />;
+	console.log('pitchsquare', this.state.artwork);
 	return (
 		<div className="square pitchsquare">
 		<a href={this.props.href} target="_blank">
-		<Pic src={this.state.artwork} />
+		{img}
 		<div className="text">
 		<h2>~ MUZIQUE ~ {this.props.name}</h2>
 		</div>
