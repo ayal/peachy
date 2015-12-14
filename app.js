@@ -663,7 +663,7 @@ const App = React.createClass({
 		}
 		var e = feedpick(_.filter(x.responseData.feed.entries, function(x){
 		    var days = (new Date() - new Date(x.publishedDate)) / 1000 / 60 / 60 / 24;
-		    if (days < 15) {
+		    if (days < 30) {
 			return true;
 		    }
 		}));
