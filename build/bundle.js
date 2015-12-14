@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "854d99926471f100e7a3"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "073551b1661de3cab08d"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -932,12 +932,20 @@
 	    componentWillMount: function componentWillMount() {
 	        var that = this;
 	        $('<img />').css({ position: 'absolute', left: '-10000px' }).load(function () {
+	            if (!that.isMounted()) {
+	                return;
+	            }
+
 	            that.setState({ opacity: 1, src: 'triangles.png' });
 	        }).attr({ src: 'triangles.png' });
 
 	        if (this.props.src) {
 	            $('<img />').css({ position: 'absolute', left: '-10000px' }).load(function () {
 	                var img = this;
+	                if (!that.isMounted()) {
+	                    return;
+	                }
+
 	                that.setState({ opacity: 0 });
 	                setTimeout(function () {
 	                    that.setState({ opacity: 1, src: that.props.src, width: $(img).width(), height: $(img).height() });

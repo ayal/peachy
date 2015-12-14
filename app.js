@@ -772,6 +772,10 @@ const Pic = React.createClass({
 	$('<img />')
 	    .css({position:'absolute',left:'-10000px'})
 	    .load(function(){
+		if (!that.isMounted()) {
+		    return;
+		}
+		
 		that.setState({opacity:1, src:'triangles.png'});
 	    }).attr({src:'triangles.png'});
 
@@ -780,6 +784,10 @@ const Pic = React.createClass({
 		.css({position:'absolute',left:'-10000px'})
 		.load(function(){
 		    var img = this;
+		    if (!that.isMounted()) {
+			return;
+		    }
+
 		    that.setState({opacity:0});
 		    setTimeout(function(){
 			that.setState({opacity:1,src:that.props.src,width: $(img).width(),height: $(img).height()});
