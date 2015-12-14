@@ -250,6 +250,21 @@ var getalbumsfromitunes = function(e, t) {
 };
 
 var list =[
+    
+    'https://artsponge.wordpress.com/rss',
+    'http://picdit.net/rss',
+    'http://thisisnthappiness.com/rss',
+    'butdoesitfloat.com/rss',
+    'http://www.haw-lin.com/rss',
+    'http://beautifuldecay.com/rss',
+    'http://feeds2.feedburner.com/Swissmiss',
+    'http://feeds.feedburner.com/ucllc/fpo',
+    'http://www.inventorymagazine.com/updates/atom.xml',
+    'http://www.valetmag.com/distribution/rss_all.xml',
+    'http://feeds.feedburner.com/selectism/rss',
+    'https://www.flickr.com/services/feeds/groups_pool.gne?id=1231870@N21&lang=en-us&format=atom',
+    'http://mosslessmagazine.com/rss',
+    'http://www.manystuff.org/?feed=rss2',
     'https://www.pinterest.com/yaelrasner/feed.rss',
     'http://httpjasmin.tumblr.com/',
     'http://artruby.com/rss',
@@ -322,7 +337,6 @@ var list =[
     'http://mangopopsicle.org/rss',
     'http://mdme-x.tumblr.com/rss',
     'http://mmday.tumblr.com/rss',
-    'http://mosslessmagazine.com/rss',
     'http://mpdrolet.tumblr.com/rss',
     'http://murmansea.tumblr.com/rss',
     'http://museumoflatinamericanart.tumblr.com/rss',
@@ -495,7 +509,6 @@ var list =[
     'http://mangopopsicle.org/rss',
     'http://mdme-x.tumblr.com/rss',
     'http://mmday.tumblr.com/rss',
-    'http://mosslessmagazine.com/rss',
     'http://mpdrolet.tumblr.com/rss',
     'http://murmansea.tumblr.com/rss',
     'http://museumoflatinamericanart.tumblr.com/rss',
@@ -640,8 +653,9 @@ const App = React.createClass({
 	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/',
 		      picked[0],
 		      'http://www.huhmagazine.co.uk/blog/rss/feed.php',
+		      picked[1]
 		      'http://feeds2.feedburner.com/itsnicethat/SlXC',
-		      ...picked.slice(1)];
+		      ...picked.slice(2)];
 	
 	_.each(chosen, function(u){
 	    if (u.match('pitchfork')) {
