@@ -288,7 +288,7 @@ const App = React.createClass({
 	var chosen = ['http://pitchfork.com/rss/reviews/best/tracks/',
 		      ...picked];
 	
-	_.each(chosen, function(u){
+/*	_.each(chosen, function(u){
 	    if (u.match('pitchfork')) {
 		toset[u] = <PitchSquare key={u} />;
 	    }
@@ -298,6 +298,7 @@ const App = React.createClass({
 	});
 
 	that.setState(toset);
+*/
 	
 	_.each(chosen, function(u){
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
@@ -388,6 +389,7 @@ const Square = React.createClass({
 	if (!src) {
 	    return null;
 	}
+	
 	return (
 		<div className="square">
 		<a href={this.props.href} target="_blank">
