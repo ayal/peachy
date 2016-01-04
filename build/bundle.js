@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "980dce3debacf0ff722f"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "150f707dfcbf14765a7b"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -1040,6 +1040,9 @@
 					},
 					nav: function nav(k, v) {},
 					render: function render() {
+									if (!this.state.artwork) {
+													return null;
+									}
 									var link = null;
 									if (this.state.pipe) {
 													link = _react2.default.createElement(
@@ -1048,7 +1051,7 @@
 																	'listen on youtube'
 													);
 									}
-									var img = _react2.default.createElement(Pic, { src: this.state.artwork });
+									var img = _react2.default.createElement('img', { src: this.state.artwork });
 									console.log('pitchsquare', this.state.artwork);
 									return _react2.default.createElement(
 													'div',
@@ -45602,6 +45605,7 @@
 	            imagesloaded(
 	                this.refs[refName],
 	                function(instance) {
+	//		    debugger;
 	                    this.masonry.layout();
 			    cb && cb();
 	                }.bind(this)
@@ -48607,7 +48611,7 @@
 	   * @param {Object or Function} options - if function, use as callback
 	   * @param {Function} onAlways - callback function
 	   */
-	  function ImagesLoaded( elem, options, onAlways ) {
+	    function ImagesLoaded( elem, options, onAlways ) {
 	    // coerce ImagesLoaded() without new, to be new ImagesLoaded()
 	    if ( !( this instanceof ImagesLoaded ) ) {
 	      return new ImagesLoaded( elem, options );
@@ -48651,7 +48655,7 @@
 	  ImagesLoaded.prototype.getImages = function() {
 	    this.images = [];
 
-	    // filter & find items if we have an item selector
+	      // filter & find items if we have an item selector
 	    for ( var i=0, len = this.elements.length; i < len; i++ ) {
 	      var elem = this.elements[i];
 	      // filter siblings
@@ -48671,6 +48675,7 @@
 	        this.addImage( img );
 	      }
 	    }
+	//      console.log('images:', this.images);
 	  };
 
 	  /**
@@ -48775,7 +48780,7 @@
 
 	    // If none of the checks above matched, simulate loading on detached element.
 	    var _this = this;
-	    resource.on( 'confirm', function( resrc, message ) {
+	      resource.on( 'confirm', function( resrc, message ) {
 	      _this.confirm( resrc.isLoaded, message );
 	      return true;
 	    });
@@ -48827,7 +48832,7 @@
 	    }
 	  };
 
-	  Resource.prototype.onload = function( event ) {
+	    Resource.prototype.onload = function( event ) {
 	    this.confirm( true, 'onload' );
 	    this.unbindProxyEvents( event );
 	  };
@@ -48839,7 +48844,7 @@
 
 	  // ----- confirm ----- //
 
-	  Resource.prototype.confirm = function( isLoaded, message ) {
+	    Resource.prototype.confirm = function( isLoaded, message ) {
 	    this.isConfirmed = true;
 	    this.isLoaded = isLoaded;
 	    this.emit( 'confirm', this, message );

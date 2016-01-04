@@ -505,11 +505,14 @@ const PitchSquare = React.createClass({
         
     },
     render: function() {
+	if (!this.state.artwork) {
+	    return null;
+	}
 	var link = null;
 	if (this.state.pipe) {
 	    link = <a className="pipe" target="_blank" href={"https://youtube.com/watch?v=" + this.state.pipe.id}>listen on youtube</a>;
 	}
-	var img = <Pic src={this.state.artwork} />;
+	var img = <img src={this.state.artwork} />;
 	console.log('pitchsquare', this.state.artwork);
 	return (
 		<div className="square pitchsquare">
