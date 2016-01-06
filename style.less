@@ -70,7 +70,20 @@ body {
 
 .square {
     opacity:0;
-    width: 32%;
+    width: 24%;
+
+    @media screen and (max-width:991px){
+	width: 32%;
+    }
+    
+    @media screen and (max-width:767px){
+	width: 48%;
+    }
+    
+    @media screen and (max-width:480px){
+	    width: 99%;
+    }
+    
     margin:4px;
     visibility:hidden;
     /*margin: 0 0 5px;

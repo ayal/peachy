@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Peachy",
-    "description": "Sweet Stuff",
-    "version": "1.0.1.4",
+    "description": "The ultimate curation of art and other links",
+    "version": "1.0.1.6",
     "chrome_url_overrides" : {
 	"newtab": "index.html"
     },
