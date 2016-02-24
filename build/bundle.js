@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "bd9a7bbe4a694f220b44"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "2dbb02abc7c790b49113"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -804,8 +804,11 @@
 	};
 
 	var feedpick = function feedpick(feed) {
+					if (!feed.length) {
+									return null;
+					}
 					var x = new Date();
-					return feed[x.getMinutes() * x.getHours() % feed.length];
+					return feed[(x.getMinutes() * 10 + x.getHours()) % feed.length];
 	};
 
 	var App = _react2.default.createClass({
@@ -834,13 +837,23 @@
 	        	that.setState(toset);
 	        */
 
+									var clist = that.state.list || [];
 									_.each(chosen, function (u) {
+													window.allproms = [];
+													var okokok = null;
+													var p = new Promise(function (r) {
+																	okokok = r;
+													});
+													allproms.push(p);
+
 													$.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function (x) {
 																	var toset = {};
 																	if (!x.responseData) {
 																					console.warn('no response data for', u);
+																					okokok();
 																					return;
 																	}
+
 																	var e = feedpick(_.filter(x.responseData.feed.entries, function (x) {
 																					var days = (new Date() - new Date(x.publishedDate)) / 1000 / 60 / 60 / 24;
 																					if (days <= 14) {
@@ -848,25 +861,33 @@
 																					}
 																	}));
 
-																	if (e) {
+																	if (!e) {
+																					okokok();
+																					return;
+																	}
+
+																	var src = e && e.mediaGroups && e.mediaGroups[0] && e.mediaGroups[0].contents && e.mediaGroups[0].contents[0] && e.mediaGroups[0].contents[0].thumbnails && e.mediaGroups[0].contents[0].thumbnails[0].url || getimages(e.content)[0];
+
+																	if (src) {
 																					if (u.match('pitchfork')) {
-																									toset[u] = _react2.default.createElement(PitchSquare, { href: e.link, name: e.title, text: e.title, more: e,
-																													getimgsrc: function getimgsrc(x) {
-																																	return $($('<div>' + x.content + '</div>').find('img')).attr('src') || console.warn('no image', x);
-																													}, key: u });
-																									that.setState(toset);
+																									clist.push({ date: e.publishedDate, square: _react2.default.createElement(PitchSquare, { href: e.link, name: e.title, text: e.title, src: src, more: e, key: u }) });
 																					} else {
-																									toset[u] = _react2.default.createElement(Square, { href: e.link, name: e.title, text: e.title, more: e,
-																													getimgsrc: function getimgsrc(x) {
-																																	return $($('<div>' + x.content + '</div>').find('img')).attr('src') || console.warn('no image', x);
-																													}, key: u });
-																									that.setState(toset);
+																									clist.push({ date: e.publishedDate, square: _react2.default.createElement(Square, { src: src, href: e.link, name: e.title, text: e.title, more: e, key: u }) });
 																					}
 																	} else {
-																					toset[u] = null;
-																					that.setState(toset);
+																					!src && console.log('no src', e);
 																	}
+
+																	okokok();
 													});
+									});
+
+									Promise.all(allproms).then(function () {
+													console.log('finished');
+													clist = clist.sort(function (a, b) {
+																	return new Date(b.date) - new Date(a.date);
+													});
+													that.setState({ list: clist });
 									});
 					},
 					nav: function nav(k, v) {},
@@ -879,14 +900,6 @@
 					},
 					render: function render() {
 									var that = this;
-									if (Object.keys(this.state).length === 0) {
-													return null;
-									}
-
-									var squares = [];
-									_.each(that.state, function (v, u) {
-													squares = _.union(squares, [v]);
-									});
 
 									return _react2.default.createElement(
 													'div',
@@ -894,11 +907,29 @@
 													_react2.default.createElement(
 																	Masonry,
 																	{ className: 'my-gallery-class', elementType: 'div', options: masonryOptions, disableImagesLoaded: false },
-																	squares
+																	_.map(this.state.list, function (x) {
+																					return x.square;
+																	})
 													)
 									);
 					}
 	});
+
+	var getimages = function getimages(str) {
+					var urls = [];
+					var rex = /<img[^>]+src="(.*?)"/gim;
+					var m = null;
+					while (m = rex.exec(str)) {
+									if (m[1].indexOf('twitt.gif') !== -1) {
+													continue;
+									}
+									urls.push(m[1]);
+					}
+					if (urls.length === 0) {
+									urls.push(null);
+					}
+					return urls;
+	};
 
 	var Square = _react2.default.createClass({
 					displayName: 'Square',
@@ -910,41 +941,14 @@
 									var that = this;
 					},
 					nav: function nav(k, v) {},
-					getImgSrcFromContent: function getImgSrcFromContent() {
-									var src = this.props.getimgsrc && this.props.getimgsrc(this.props.more);
-									return src;
-					},
 					render: function render() {
-									var src = this.getImgSrcFromContent();
-									if (!src) {
-													return null;
-									}
-
 									return _react2.default.createElement(
 													'div',
 													{ className: 'square' },
 													_react2.default.createElement(
 																	'a',
 																	{ href: this.props.href, target: '_blank' },
-																	_react2.default.createElement('img', { src: src }),
-																	_react2.default.createElement(
-																					'div',
-																					{ className: 'text' },
-																					_react2.default.createElement(
-																									'h2',
-																									null,
-																									this.props.name
-																					)
-																	)
-													)
-									);
-									return _react2.default.createElement(
-													'div',
-													{ className: 'square' },
-													_react2.default.createElement(
-																	'a',
-																	{ href: this.props.href, target: '_blank' },
-																	_react2.default.createElement(Pic, { src: src }),
+																	_react2.default.createElement('img', { src: this.props.src }),
 																	_react2.default.createElement(
 																					'div',
 																					{ className: 'text' },
@@ -25528,7 +25532,7 @@
 
 
 	// module
-	exports.push([module.id, "body {\n  font-family: courier;\n  background: #F7CAC9;\n  overflow-x: hidden;\n  position: relative;\n  margin: 0;\n}\n#content {\n  column-gap: 5px;\n  -webkit-column-gap: 5px;\n  -moz-column-gap: 5px;\n  width: 100%;\n  text-align: center;\n}\n#content .squares {\n  position: relative;\n  z-index: 1;\n}\n#content canvas {\n  position: absolute;\n  z-index: 0;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n/*#content {\n    -webkit-column-count: 4;\n    -moz-column-count: 4;\n    column-count: 4;\n}\n\n@media screen and (max-width:1200px){\n    #content {\n\t-webkit-column-count: 3;\n\t-moz-column-count: 3;\n\tcolumn-count: 3;\n    }\n}\n\n@media screen and (max-width:991px){\n    #content {\n\t-webkit-column-count: 2;\n\t-moz-column-count: 2;\n\tcolumn-count: 2;\n    }\n}   \n\n@media screen and (max-width:767px){\n    #content {\n\t-webkit-column-count: 2;\n\t-moz-column-count: 2;\n\tcolumn-count: 2;\n    }\n}\n\n@media screen and (max-width:480px){\n    #content {\n\t-webkit-column-count: 1;\n\t-moz-column-count: 1;\n\tcolumn-count: 1;\n    }\n}\n*/\n.square {\n  opacity: 0;\n  width: 24%;\n  margin: 4px;\n  visibility: hidden;\n  /*margin: 0 0 5px;\n    width:300px;\n    display:inline-block;*/\n  background-image: linear-gradient(to right, #92A8D1, #F7CAC9);\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n@media screen and (max-width: 991px) {\n  .square {\n    width: 32%;\n  }\n}\n@media screen and (max-width: 767px) {\n  .square {\n    width: 48%;\n  }\n}\n@media screen and (max-width: 480px) {\n  .square {\n    width: 99%;\n  }\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px 0;\n  font-weight: 100;\n  color: #555;\n}\n.square img {\n  width: 100%;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .pipe {\n  text-decoration: underline;\n  display: block;\n  margin: 10px;\n}\n.square .text {\n  padding: 0 10px 10px;\n  font-size: 11px;\n}\n", ""]);
+	exports.push([module.id, "body {\n  font-family: courier;\n  background: #F7CAC9;\n  overflow-x: hidden;\n  position: relative;\n  margin: 0;\n}\n#content {\n  column-gap: 5px;\n  -webkit-column-gap: 5px;\n  -moz-column-gap: 5px;\n  width: 100%;\n  text-align: center;\n}\n#content .squares {\n  position: relative;\n  z-index: 1;\n}\n#content canvas {\n  position: absolute;\n  z-index: 0;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n}\n/*#content {\n    -webkit-column-count: 4;\n    -moz-column-count: 4;\n    column-count: 4;\n}\n\n@media screen and (max-width:1200px){\n    #content {\n\t-webkit-column-count: 3;\n\t-moz-column-count: 3;\n\tcolumn-count: 3;\n    }\n}\n\n@media screen and (max-width:991px){\n    #content {\n\t-webkit-column-count: 2;\n\t-moz-column-count: 2;\n\tcolumn-count: 2;\n    }\n}   \n\n@media screen and (max-width:767px){\n    #content {\n\t-webkit-column-count: 2;\n\t-moz-column-count: 2;\n\tcolumn-count: 2;\n    }\n}\n\n@media screen and (max-width:480px){\n    #content {\n\t-webkit-column-count: 1;\n\t-moz-column-count: 1;\n\tcolumn-count: 1;\n    }\n}\n*/\n.square {\n  width: 24%;\n  margin: 4px;\n  /*    opacity:0; */\n  /*    visibility:hidden; */\n  /*margin: 0 0 5px;\n    width:300px;\n    display:inline-block;*/\n  background-image: linear-gradient(to right, #92A8D1, #F7CAC9);\n  border-radius: 2px;\n  overflow: hidden;\n  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);\n}\n@media screen and (max-width: 991px) {\n  .square {\n    width: 32%;\n  }\n}\n@media screen and (max-width: 767px) {\n  .square {\n    width: 48%;\n  }\n}\n@media screen and (max-width: 480px) {\n  .square {\n    width: 99%;\n  }\n}\n.square h2 {\n  font-size: 13px;\n  margin: 4px 0;\n  font-weight: 100;\n  color: #555;\n}\n.square img {\n  width: 100%;\n}\n.square a {\n  text-decoration: none;\n  color: #555;\n}\n.square .pipe {\n  text-decoration: underline;\n  display: block;\n  margin: 10px;\n}\n.square .text {\n  padding: 0 10px 10px;\n  font-size: 11px;\n}\n", ""]);
 
 	// exports
 
@@ -45474,7 +45478,9 @@
 	            disableImagesLoaded: React.PropTypes.bool,
 	            options: React.PropTypes.object
 	        },
-
+		getInitialState: function() {
+		    return {loaded:{}};
+		},
 	        getDefaultProps: function() {
 	            return {
 	                disableImagesLoaded: false,
@@ -45486,7 +45492,7 @@
 
 	        initializeMasonry: function(force) {
 	            if (!this.masonry || force) {
-	                this.masonry = new Masonry(
+	                window.xmasonry = this.masonry = new Masonry(
 	                    this.refs[refName],
 	                    this.props.options
 	                );
@@ -45601,24 +45607,41 @@
 
 	            this.masonry.layout();
 	        },
+		bounceupdate: _.throttle(function(x){
+		    this.props.loading && this.props.loading();
+		    x.forceUpdate();
+		    setTimeout(function(){
+			x.masonry.layout();
+		    },2000);
+		    setTimeout(function(){
+			x.masonry.layout();
+		    },6000);
 
+		},2000),
 	        imagesLoaded: function(cb) {
 	            if (this.props.disableImagesLoaded) return;
 		    
-	            imagesloaded(
-	                this.refs[refName],
-	                function(instance) {
-			    this.showSquares(instance);
-	                    this.masonry.layout();
-			    cb && cb();
-	                }.bind(this)
-	            );
+		    var that = this;
+
+		    if (that.props.children.length === Object.keys(that.state.loaded).length) {
+			return;
+		    }
+		    
+		    for (var i = 0; i < that.props.children.length; i++) {
+			var x = that.props.children[i];
+			if (that.state.loaded[x.props.src]) {
+
+			}
+			else {
+			    $('<img />').load(function() {
+				that.state.loaded[x.props.src] = 1;
+				that.bounceupdate(that);
+				that.imagesLoaded();
+			    }).attr('src', x.props.src);
+			    break;
+			}
+		    }
 	        },
-		showSquares: function(inst) {
-		    inst.images.forEach(function(i){
-			$(i.img).parents('.square').css({visibility:'visible'}).animate({opacity:1},1000)
-		    });
-		},
 	        componentDidMount: function() {
 	            this.initializeMasonry();
 	            this.imagesLoaded();
@@ -45643,10 +45666,19 @@
 	        },
 
 	        render: function() {
+		    var that = this;
+		    
+		    var oksquares = _.filter(this.props.children, function(x){
+			if(that.state.loaded[x.props.src]) {
+			    return x;
+			}
+		    });
+
+		    
 	            return React.createElement(this.props.elementType, {
 	                className: this.props.className,
 	                ref: refName
-	            }, this.props.children);
+	            }, oksquares);
 	        }
 	    })
 	}

@@ -271,8 +271,11 @@ var listpick = function() {
 };
 
 var feedpick = function(feed) {
+    if (!feed.length) {
+	return null;
+    }
     var x = new Date()
-    return feed[(x.getMinutes() * x.getHours()) % feed.length];
+    return feed[(x.getMinutes() * 10 + x.getHours()) % feed.length];
 };
 
 const App = React.createClass({
@@ -299,43 +302,66 @@ const App = React.createClass({
 
 	that.setState(toset);
 */
-	
+
+	var clist = that.state.list || [];
 	_.each(chosen, function(u){
+	    window.allproms = [];
+	    var okokok = null;
+	    var p = new Promise(function(r){
+		okokok = r;
+	    })
+	    allproms.push(p)
+
 	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
 		var toset = {};
 		if (!x.responseData) {
 		    console.warn('no response data for', u);
+		    okokok();
 		    return;
 		}
+		
 		var e = feedpick(_.filter(x.responseData.feed.entries, function(x){
 		    var days = (new Date() - new Date(x.publishedDate)) / 1000 / 60 / 60 / 24;
 		    if (days <= 14) {
 			return true;
 		    }
 		}));
-		
-		if (e) {
-		    if (u.match('pitchfork')) {
-			toset[u] = <PitchSquare href={e.link} name={e.title} text={e.title} more={e}
-			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-					    console.warn('no image', x)}} key={u} />
-			    that.setState(toset);
 
+		if (!e) {
+		    okokok();
+		    return;
+		}
+		
+		var src = (
+		    e && e.mediaGroups && e.mediaGroups[0] && e.mediaGroups[0].contents && e.mediaGroups[0].contents[0] && 
+			e.mediaGroups[0].contents[0].thumbnails && e.mediaGroups[0].contents[0].thumbnails[0].url
+		) || getimages(e.content)[0]
+		
+		if (src) {
+		    if (u.match('pitchfork')) {
+			clist.push({date: e.publishedDate, square:<PitchSquare href={e.link} name={e.title} text={e.title} src={src} more={e} key={u} />});
 		    }
 		    else {
-			toset[u] = <Square href={e.link} name={e.title} text={e.title} more={e}
-			getimgsrc={(x) => { return $($('<div>' + x.content + '</div>').find('img')).attr('src') ||
-					    console.warn('no image', x)}} key={u} />
-			    that.setState(toset);
+			clist.push({date: e.publishedDate, square: <Square src={src} href={e.link} name={e.title} text={e.title} more={e} key={u} />});
 		    }
 		}
 		else {
-		    toset[u] = null;
-		    that.setState(toset);
-
+		    !src && console.log('no src', e)
 		}
+		
+		okokok();
+
 	    });
 	});
+
+	Promise.all(allproms).then(function(){
+	    console.log('finished');
+	    clist = clist.sort((a,b)=>(new Date(b.date) - new Date(a.date)));
+	    that.setState({list: clist});
+	})
+
+	
+	
     },
     nav: function(k,v) {
         
@@ -349,19 +375,11 @@ const App = React.createClass({
     },
     render: function() {
 	var that = this;
-	if (Object.keys(this.state).length === 0) {
-	    return null;
-	}
-
-	var squares = [];
-	_.each(that.state, function(v, u){
-	    squares = _.union(squares, [v])
-	});
 
         return (
 		<div className="squares">
 		<Masonry className={'my-gallery-class'} elementType={'div'} options={masonryOptions} disableImagesLoaded={false}>
-		{squares}
+		{_.map(this.state.list, x=>x.square)}
    	    </Masonry>
 
 
@@ -369,6 +387,23 @@ const App = React.createClass({
         );
     }
 });
+
+var getimages = function(str) {
+    var urls = [];
+    var rex = /<img[^>]+src="(.*?)"/gim;
+    var m = null;
+    while ( m = rex.exec( str ) ) {
+	if (m[1].indexOf('twitt.gif') !== -1) {
+	    continue;
+	}
+	urls.push( m[1] );
+    }
+    if (urls.length === 0) {
+	urls.push(null);
+    }
+    return urls;
+}
+
 
 const Square = React.createClass({
     getInitialState: function() {
@@ -380,36 +415,17 @@ const Square = React.createClass({
     nav: function(k,v) {
         
     },
-    getImgSrcFromContent: function() {
-	var src = this.props.getimgsrc && this.props.getimgsrc(this.props.more);
-	return src;
-    },
     render: function() {
-	var src = this.getImgSrcFromContent();
-	if (!src) {
-	    return null;
-	}
-	
 	return (
 		<div className="square">
 		<a href={this.props.href} target="_blank">
-		<img src={src} />
+		<img src={this.props.src} />
 		<div className="text">
 		<h2>{this.props.name}</h2>
 		</div>
 		</a>
 		</div>
-	)
-        return (
-		<div className="square">
-		<a href={this.props.href} target="_blank">
-		<Pic src={src} />
-		<div className="text">
-		<h2>{this.props.name}</h2>
-		</div>
-		</a>
-		</div>
-        );
+	);
     }
 });
 
