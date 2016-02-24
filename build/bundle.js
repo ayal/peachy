@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "2dbb02abc7c790b49113"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "134c621b3349d95bcb53"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -798,7 +798,7 @@
 					var x = new Date();
 					var arr = [];
 					for (var i = 0; i < 100; i++) {
-									arr.push(list[(x.getMinutes() * x.getHours() + i) % list.length]);
+									arr.push(list[(x.getMinutes() * 100 + x.getHours() * 10 + i) % list.length]);
 					}
 					return arr;
 	};
@@ -854,29 +854,33 @@
 																					return;
 																	}
 
-																	var e = feedpick(_.filter(x.responseData.feed.entries, function (x) {
+																	var items = _.filter(x.responseData.feed.entries, function (x) {
 																					var days = (new Date() - new Date(x.publishedDate)) / 1000 / 60 / 60 / 24;
-																					if (days <= 14) {
+																					if (days <= 3) {
 																									return true;
-																					}
-																	}));
-
-																	if (!e) {
-																					okokok();
-																					return;
-																	}
-
-																	var src = e && e.mediaGroups && e.mediaGroups[0] && e.mediaGroups[0].contents && e.mediaGroups[0].contents[0] && e.mediaGroups[0].contents[0].thumbnails && e.mediaGroups[0].contents[0].thumbnails[0].url || getimages(e.content)[0];
-
-																	if (src) {
-																					if (u.match('pitchfork')) {
-																									clist.push({ date: e.publishedDate, square: _react2.default.createElement(PitchSquare, { href: e.link, name: e.title, text: e.title, src: src, more: e, key: u }) });
 																					} else {
-																									clist.push({ date: e.publishedDate, square: _react2.default.createElement(Square, { src: src, href: e.link, name: e.title, text: e.title, more: e, key: u }) });
+																									//			console.log('old post', u);
 																					}
-																	} else {
-																					!src && console.log('no src', e);
-																	}
+																	});
+
+																	_.each(items, function (e, i) {
+
+																					if (!e) {
+																									return;
+																					}
+
+																					var src = e && e.mediaGroups && e.mediaGroups[0] && e.mediaGroups[0].contents && e.mediaGroups[0].contents[0] && e.mediaGroups[0].contents[0].thumbnails && e.mediaGroups[0].contents[0].thumbnails[0].url || getimages(e.content)[0];
+
+																					if (src) {
+																									if (u.match('pitchfork')) {
+																													clist.push({ date: e.publishedDate, square: _react2.default.createElement(PitchSquare, { href: e.link, name: e.title, text: e.title, src: src, more: e, key: u + '_' + i }) });
+																									} else {
+																													clist.push({ date: e.publishedDate, square: _react2.default.createElement(Square, { src: src, href: e.link, name: e.title, text: e.title, more: e, key: u + '_' + i }) });
+																									}
+																					} else {
+																									!src && console.log('no src', e);
+																					}
+																	});
 
 																	okokok();
 													});
