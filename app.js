@@ -383,7 +383,7 @@ const App = React.createClass({
     render: function() {
 	var that = this;
 
-	var shareurl = "http://ayal.github.io/peachy"
+	var shareurl = "http://www.peachyyy.com"
 	
         return (
 		<div className="all">
@@ -487,7 +487,7 @@ const Square = React.createClass({
 	return (
 		<div className="square">
 
-		<a target="_blank" className="tweet" href="#" onClick={this.clicktweet("https://twitter.com/intent/tweet?text="+encodeURIComponent(this.props.name)+"&hashtags=peachyyy&url="+encodeURIComponent(this.props.href)+"&original_referer=")}><i /></a>
+		<a target="_blank" className="tweet" href="#" onClick={this.clicktweet("https://twitter.com/intent/tweet?text="+encodeURIComponent(this.props.name)+"&hashtags=peachyyy&url="+encodeURIComponent(this.props.href)+"&via=le_peachyyy&original_referer=")}><i /></a>
 	    
 		<a target="_blank" href="#" className="pinit" onClick={this.clicktweet("http://www.pinterest.com/pin/create/button/?url="+encodeURIComponent(this.props.href)+"&media="+encodeURIComponent(this.props.src)+"&description=" + encodeURIComponent(this.props.name))}>
 		<i />
