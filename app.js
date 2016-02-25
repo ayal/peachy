@@ -383,14 +383,40 @@ const App = React.createClass({
     render: function() {
 	var that = this;
 
+	var shareurl = "http://ayal.github.io/peachy"
+	
         return (
+		<div className="all">
+
+		<div className="header">
+		<a target="_blank" href="https://chrome.google.com/webstore/detail/peachy/ofejclelocfjjapainmpndokobkjlbcp?hl=en">
+		<h1>peachy</h1>
+		</a>
+		
+		<div className="right">
+		<div  className="w-widget"><span className="love">love me?</span></div>
+		<div className="w-widget w-widget-facebook mrk-share">
+		<iframe src={"https://www.facebook.com/plugins/like.php?href=" + encodeURIComponent(shareurl) + "&layout=button_count&locale=en_US&action=like&show_faces=false&share=true"} scrolling="no" frameBorder="0" allowTransparency="true" ></iframe>
+		</div>
+		<div className="w-widget w-widget-twitter mrk-share mrk-twitt">
+		<iframe src={"https://platform.twitter.com/widgets/tweet_button.html#url=" + encodeURIComponent(shareurl) + "&counturl=" + encodeURIComponent(shareurl) + "&text=" + encodeURIComponent("#peachyyy") + "&count=none&size=m&dnt=true"} scrolling="no" frameBorder="0" allowTransparency="true"></iframe>
+		</div>
+		
+		<div className="w-widget w-widget-gplus mrk-share">
+		<div className="g-plusone" data-href={shareurl} data-size="medium" data-annotation="bubble" data-width="120" data-recommendations="false" id="___plusone_0" ></div>
+		</div>
+		</div>
+
+		</div>
+		
 		<div className="squares">
 		<Masonry className={'my-gallery-class'} elementType={'div'} options={masonryOptions} disableImagesLoaded={false}>
 		{_.map(this.state.list, x=>x.square)}
    	    </Masonry>
-
+		
 
 	    </div>
+		</div>
         );
     }
 });
@@ -411,6 +437,12 @@ var getimages = function(str) {
     return urls;
 }
 
+ga('send', 'event', 'hello-peachy');
+setTimeout(function(){
+    $('.right').addClass('show');
+},20000)
+
+
 
 const Square = React.createClass({
     getInitialState: function() {
@@ -422,10 +454,47 @@ const Square = React.createClass({
     nav: function(k,v) {
         
     },
+    clicklink: function(u) {
+	return (e) => {
+	    e.preventDefault();
+	    if (u.indexOf('?') !== -1) {
+		u += '&ref=peachyyy.com';
+	    }
+	    else {
+		u += '?&ref=peachyyy.com';
+	    }
+	    window.open(u + '');
+	    ga('send', 'event', 'click', 'click-square', u);
+	}
+    },
+
+    clicktweet: function(u) {
+	return (e) => {
+	    e.preventDefault();
+	    window.open(u, 'share', 'height=400,width=550');
+	    ga('send', 'event', 'click', 'click-tweet', u);
+	}
+    },
+    clickpin: function(u) {
+	return (e) => {
+	    e.preventDefault();
+	    window.open(u, 'share', 'height=400,width=550');
+	    ga('send', 'event', 'click', 'click-pin', u);
+	}
+    },
+
     render: function() {
 	return (
 		<div className="square">
-		<a href={this.props.href} target="_blank">
+
+		<a target="_blank" className="tweet" href="#" onClick={this.clicktweet("https://twitter.com/intent/tweet?text="+encodeURIComponent(this.props.name)+"&hashtags=peachyyy&url="+encodeURIComponent(this.props.href)+"&original_referer=")}><i /></a>
+	    
+		<a target="_blank" href="#" className="pinit" onClick={this.clicktweet("http://www.pinterest.com/pin/create/button/?url="+encodeURIComponent(this.props.href)+"&media="+encodeURIComponent(this.props.src)+"&description=" + encodeURIComponent(this.props.name))}>
+		<i />
+		</a>
+
+
+		<a href={this.props.href} target="_blank" onClick={this.clicklink(this.props.href)}>
 		<img src={this.props.src} />
 		<div className="text">
 		<h2>{this.props.name}</h2>

@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Peachy",
     "description": "The ultimate curation of art and other links",
-    "version": "1.0.1.8",
+    "version": "1.0.2.0",
     "chrome_url_overrides" : {
 	"newtab": "index.html"
     },
@@ -16,5 +16,5 @@
     "background": {
 	"scripts": ["jquery.js", "background.js"]
     },
-    "content_security_policy": "script-src 'self' https://ajax.googleapis.com https://www.googleapis.com https://itunes.apple.com; object-src 'self'"
+    "content_security_policy": "script-src 'self' https://apis.google.com https://ajax.googleapis.com https://www.googleapis.com https://itunes.apple.com https://www.google-analytics.com; object-src 'self'"
 }
