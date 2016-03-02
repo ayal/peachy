@@ -1,502 +1,4 @@
 /******/ (function(modules) { // webpackBootstrap
-/******/ 	var parentHotUpdateCallback = this["webpackHotUpdate"];
-/******/ 	this["webpackHotUpdate"] = 
-/******/ 	function webpackHotUpdateCallback(chunkId, moreModules) { // eslint-disable-line no-unused-vars
-/******/ 		hotAddUpdateChunk(chunkId, moreModules);
-/******/ 		if(parentHotUpdateCallback) parentHotUpdateCallback(chunkId, moreModules);
-/******/ 	}
-/******/ 	
-/******/ 	function hotDownloadUpdateChunk(chunkId) { // eslint-disable-line no-unused-vars
-/******/ 		var head = document.getElementsByTagName("head")[0];
-/******/ 		var script = document.createElement("script");
-/******/ 		script.type = "text/javascript";
-/******/ 		script.charset = "utf-8";
-/******/ 		script.src = __webpack_require__.p + "" + chunkId + "." + hotCurrentHash + ".hot-update.js";
-/******/ 		head.appendChild(script);
-/******/ 	}
-/******/ 	
-/******/ 	function hotDownloadManifest(callback) { // eslint-disable-line no-unused-vars
-/******/ 		if(typeof XMLHttpRequest === "undefined")
-/******/ 			return callback(new Error("No browser support"));
-/******/ 		try {
-/******/ 			var request = new XMLHttpRequest();
-/******/ 			var requestPath = __webpack_require__.p + "" + hotCurrentHash + ".hot-update.json";
-/******/ 			request.open("GET", requestPath, true);
-/******/ 			request.timeout = 10000;
-/******/ 			request.send(null);
-/******/ 		} catch(err) {
-/******/ 			return callback(err);
-/******/ 		}
-/******/ 		request.onreadystatechange = function() {
-/******/ 			if(request.readyState !== 4) return;
-/******/ 			if(request.status === 0) {
-/******/ 				// timeout
-/******/ 				callback(new Error("Manifest request to " + requestPath + " timed out."));
-/******/ 			} else if(request.status === 404) {
-/******/ 				// no update available
-/******/ 				callback();
-/******/ 			} else if(request.status !== 200 && request.status !== 304) {
-/******/ 				// other failure
-/******/ 				callback(new Error("Manifest request to " + requestPath + " failed."));
-/******/ 			} else {
-/******/ 				// success
-/******/ 				try {
-/******/ 					var update = JSON.parse(request.responseText);
-/******/ 				} catch(e) {
-/******/ 					callback(e);
-/******/ 					return;
-/******/ 				}
-/******/ 				callback(null, update);
-/******/ 			}
-/******/ 		};
-/******/ 	}
-
-/******/ 	
-/******/ 	
-/******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "9121fd04eac5c05108fd"; // eslint-disable-line no-unused-vars
-/******/ 	var hotCurrentModuleData = {};
-/******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
-/******/ 	
-/******/ 	function hotCreateRequire(moduleId) { // eslint-disable-line no-unused-vars
-/******/ 		var me = installedModules[moduleId];
-/******/ 		if(!me) return __webpack_require__;
-/******/ 		var fn = function(request) {
-/******/ 			if(me.hot.active) {
-/******/ 				if(installedModules[request]) {
-/******/ 					if(installedModules[request].parents.indexOf(moduleId) < 0)
-/******/ 						installedModules[request].parents.push(moduleId);
-/******/ 					if(me.children.indexOf(request) < 0)
-/******/ 						me.children.push(request);
-/******/ 				} else hotCurrentParents = [moduleId];
-/******/ 			} else {
-/******/ 				console.warn("[HMR] unexpected require(" + request + ") from disposed module " + moduleId);
-/******/ 				hotCurrentParents = [];
-/******/ 			}
-/******/ 			return __webpack_require__(request);
-/******/ 		};
-/******/ 		for(var name in __webpack_require__) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(__webpack_require__, name)) {
-/******/ 				fn[name] = __webpack_require__[name];
-/******/ 			}
-/******/ 		}
-/******/ 		fn.e = function(chunkId, callback) {
-/******/ 			if(hotStatus === "ready")
-/******/ 				hotSetStatus("prepare");
-/******/ 			hotChunksLoading++;
-/******/ 			__webpack_require__.e(chunkId, function() {
-/******/ 				try {
-/******/ 					callback.call(null, fn);
-/******/ 				} finally {
-/******/ 					finishChunkLoading();
-/******/ 				}
-/******/ 	
-/******/ 				function finishChunkLoading() {
-/******/ 					hotChunksLoading--;
-/******/ 					if(hotStatus === "prepare") {
-/******/ 						if(!hotWaitingFilesMap[chunkId]) {
-/******/ 							hotEnsureUpdateChunk(chunkId);
-/******/ 						}
-/******/ 						if(hotChunksLoading === 0 && hotWaitingFiles === 0) {
-/******/ 							hotUpdateDownloaded();
-/******/ 						}
-/******/ 					}
-/******/ 				}
-/******/ 			});
-/******/ 		};
-/******/ 		return fn;
-/******/ 	}
-/******/ 	
-/******/ 	function hotCreateModule(moduleId) { // eslint-disable-line no-unused-vars
-/******/ 		var hot = {
-/******/ 			// private stuff
-/******/ 			_acceptedDependencies: {},
-/******/ 			_declinedDependencies: {},
-/******/ 			_selfAccepted: false,
-/******/ 			_selfDeclined: false,
-/******/ 			_disposeHandlers: [],
-/******/ 	
-/******/ 			// Module API
-/******/ 			active: true,
-/******/ 			accept: function(dep, callback) {
-/******/ 				if(typeof dep === "undefined")
-/******/ 					hot._selfAccepted = true;
-/******/ 				else if(typeof dep === "function")
-/******/ 					hot._selfAccepted = dep;
-/******/ 				else if(typeof dep === "object")
-/******/ 					for(var i = 0; i < dep.length; i++)
-/******/ 						hot._acceptedDependencies[dep[i]] = callback;
-/******/ 				else
-/******/ 					hot._acceptedDependencies[dep] = callback;
-/******/ 			},
-/******/ 			decline: function(dep) {
-/******/ 				if(typeof dep === "undefined")
-/******/ 					hot._selfDeclined = true;
-/******/ 				else if(typeof dep === "number")
-/******/ 					hot._declinedDependencies[dep] = true;
-/******/ 				else
-/******/ 					for(var i = 0; i < dep.length; i++)
-/******/ 						hot._declinedDependencies[dep[i]] = true;
-/******/ 			},
-/******/ 			dispose: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			addDisposeHandler: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			removeDisposeHandler: function(callback) {
-/******/ 				var idx = hot._disposeHandlers.indexOf(callback);
-/******/ 				if(idx >= 0) hot._disposeHandlers.splice(idx, 1);
-/******/ 			},
-/******/ 	
-/******/ 			// Management API
-/******/ 			check: hotCheck,
-/******/ 			apply: hotApply,
-/******/ 			status: function(l) {
-/******/ 				if(!l) return hotStatus;
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			addStatusHandler: function(l) {
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			removeStatusHandler: function(l) {
-/******/ 				var idx = hotStatusHandlers.indexOf(l);
-/******/ 				if(idx >= 0) hotStatusHandlers.splice(idx, 1);
-/******/ 			},
-/******/ 	
-/******/ 			//inherit from previous dispose call
-/******/ 			data: hotCurrentModuleData[moduleId]
-/******/ 		};
-/******/ 		return hot;
-/******/ 	}
-/******/ 	
-/******/ 	var hotStatusHandlers = [];
-/******/ 	var hotStatus = "idle";
-/******/ 	
-/******/ 	function hotSetStatus(newStatus) {
-/******/ 		hotStatus = newStatus;
-/******/ 		for(var i = 0; i < hotStatusHandlers.length; i++)
-/******/ 			hotStatusHandlers[i].call(null, newStatus);
-/******/ 	}
-/******/ 	
-/******/ 	// while downloading
-/******/ 	var hotWaitingFiles = 0;
-/******/ 	var hotChunksLoading = 0;
-/******/ 	var hotWaitingFilesMap = {};
-/******/ 	var hotRequestedFilesMap = {};
-/******/ 	var hotAvailibleFilesMap = {};
-/******/ 	var hotCallback;
-/******/ 	
-/******/ 	// The update info
-/******/ 	var hotUpdate, hotUpdateNewHash;
-/******/ 	
-/******/ 	function toModuleId(id) {
-/******/ 		var isNumber = (+id) + "" === id;
-/******/ 		return isNumber ? +id : id;
-/******/ 	}
-/******/ 	
-/******/ 	function hotCheck(apply, callback) {
-/******/ 		if(hotStatus !== "idle") throw new Error("check() is only allowed in idle status");
-/******/ 		if(typeof apply === "function") {
-/******/ 			hotApplyOnUpdate = false;
-/******/ 			callback = apply;
-/******/ 		} else {
-/******/ 			hotApplyOnUpdate = apply;
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		}
-/******/ 		hotSetStatus("check");
-/******/ 		hotDownloadManifest(function(err, update) {
-/******/ 			if(err) return callback(err);
-/******/ 			if(!update) {
-/******/ 				hotSetStatus("idle");
-/******/ 				callback(null, null);
-/******/ 				return;
-/******/ 			}
-/******/ 	
-/******/ 			hotRequestedFilesMap = {};
-/******/ 			hotAvailibleFilesMap = {};
-/******/ 			hotWaitingFilesMap = {};
-/******/ 			for(var i = 0; i < update.c.length; i++)
-/******/ 				hotAvailibleFilesMap[update.c[i]] = true;
-/******/ 			hotUpdateNewHash = update.h;
-/******/ 	
-/******/ 			hotSetStatus("prepare");
-/******/ 			hotCallback = callback;
-/******/ 			hotUpdate = {};
-/******/ 			var chunkId = 0;
-/******/ 			{ // eslint-disable-line no-lone-blocks
-/******/ 				/*globals chunkId */
-/******/ 				hotEnsureUpdateChunk(chunkId);
-/******/ 			}
-/******/ 			if(hotStatus === "prepare" && hotChunksLoading === 0 && hotWaitingFiles === 0) {
-/******/ 				hotUpdateDownloaded();
-/******/ 			}
-/******/ 		});
-/******/ 	}
-/******/ 	
-/******/ 	function hotAddUpdateChunk(chunkId, moreModules) { // eslint-disable-line no-unused-vars
-/******/ 		if(!hotAvailibleFilesMap[chunkId] || !hotRequestedFilesMap[chunkId])
-/******/ 			return;
-/******/ 		hotRequestedFilesMap[chunkId] = false;
-/******/ 		for(var moduleId in moreModules) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
-/******/ 				hotUpdate[moduleId] = moreModules[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 		if(--hotWaitingFiles === 0 && hotChunksLoading === 0) {
-/******/ 			hotUpdateDownloaded();
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotEnsureUpdateChunk(chunkId) {
-/******/ 		if(!hotAvailibleFilesMap[chunkId]) {
-/******/ 			hotWaitingFilesMap[chunkId] = true;
-/******/ 		} else {
-/******/ 			hotRequestedFilesMap[chunkId] = true;
-/******/ 			hotWaitingFiles++;
-/******/ 			hotDownloadUpdateChunk(chunkId);
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotUpdateDownloaded() {
-/******/ 		hotSetStatus("ready");
-/******/ 		var callback = hotCallback;
-/******/ 		hotCallback = null;
-/******/ 		if(!callback) return;
-/******/ 		if(hotApplyOnUpdate) {
-/******/ 			hotApply(hotApplyOnUpdate, callback);
-/******/ 		} else {
-/******/ 			var outdatedModules = [];
-/******/ 			for(var id in hotUpdate) {
-/******/ 				if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 					outdatedModules.push(toModuleId(id));
-/******/ 				}
-/******/ 			}
-/******/ 			callback(null, outdatedModules);
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotApply(options, callback) {
-/******/ 		if(hotStatus !== "ready") throw new Error("apply() is only allowed in ready status");
-/******/ 		if(typeof options === "function") {
-/******/ 			callback = options;
-/******/ 			options = {};
-/******/ 		} else if(options && typeof options === "object") {
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		} else {
-/******/ 			options = {};
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		}
-/******/ 	
-/******/ 		function getAffectedStuff(module) {
-/******/ 			var outdatedModules = [module];
-/******/ 			var outdatedDependencies = {};
-/******/ 	
-/******/ 			var queue = outdatedModules.slice();
-/******/ 			while(queue.length > 0) {
-/******/ 				var moduleId = queue.pop();
-/******/ 				var module = installedModules[moduleId];
-/******/ 				if(!module || module.hot._selfAccepted)
-/******/ 					continue;
-/******/ 				if(module.hot._selfDeclined) {
-/******/ 					return new Error("Aborted because of self decline: " + moduleId);
-/******/ 				}
-/******/ 				if(moduleId === 0) {
-/******/ 					return;
-/******/ 				}
-/******/ 				for(var i = 0; i < module.parents.length; i++) {
-/******/ 					var parentId = module.parents[i];
-/******/ 					var parent = installedModules[parentId];
-/******/ 					if(parent.hot._declinedDependencies[moduleId]) {
-/******/ 						return new Error("Aborted because of declined dependency: " + moduleId + " in " + parentId);
-/******/ 					}
-/******/ 					if(outdatedModules.indexOf(parentId) >= 0) continue;
-/******/ 					if(parent.hot._acceptedDependencies[moduleId]) {
-/******/ 						if(!outdatedDependencies[parentId])
-/******/ 							outdatedDependencies[parentId] = [];
-/******/ 						addAllToSet(outdatedDependencies[parentId], [moduleId]);
-/******/ 						continue;
-/******/ 					}
-/******/ 					delete outdatedDependencies[parentId];
-/******/ 					outdatedModules.push(parentId);
-/******/ 					queue.push(parentId);
-/******/ 				}
-/******/ 			}
-/******/ 	
-/******/ 			return [outdatedModules, outdatedDependencies];
-/******/ 		}
-/******/ 	
-/******/ 		function addAllToSet(a, b) {
-/******/ 			for(var i = 0; i < b.length; i++) {
-/******/ 				var item = b[i];
-/******/ 				if(a.indexOf(item) < 0)
-/******/ 					a.push(item);
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// at begin all updates modules are outdated
-/******/ 		// the "outdated" status can propagate to parents if they don't accept the children
-/******/ 		var outdatedDependencies = {};
-/******/ 		var outdatedModules = [];
-/******/ 		var appliedUpdate = {};
-/******/ 		for(var id in hotUpdate) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 				var moduleId = toModuleId(id);
-/******/ 				var result = getAffectedStuff(moduleId);
-/******/ 				if(!result) {
-/******/ 					if(options.ignoreUnaccepted)
-/******/ 						continue;
-/******/ 					hotSetStatus("abort");
-/******/ 					return callback(new Error("Aborted because " + moduleId + " is not accepted"));
-/******/ 				}
-/******/ 				if(result instanceof Error) {
-/******/ 					hotSetStatus("abort");
-/******/ 					return callback(result);
-/******/ 				}
-/******/ 				appliedUpdate[moduleId] = hotUpdate[moduleId];
-/******/ 				addAllToSet(outdatedModules, result[0]);
-/******/ 				for(var moduleId in result[1]) {
-/******/ 					if(Object.prototype.hasOwnProperty.call(result[1], moduleId)) {
-/******/ 						if(!outdatedDependencies[moduleId])
-/******/ 							outdatedDependencies[moduleId] = [];
-/******/ 						addAllToSet(outdatedDependencies[moduleId], result[1][moduleId]);
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Store self accepted outdated modules to require them later by the module system
-/******/ 		var outdatedSelfAcceptedModules = [];
-/******/ 		for(var i = 0; i < outdatedModules.length; i++) {
-/******/ 			var moduleId = outdatedModules[i];
-/******/ 			if(installedModules[moduleId] && installedModules[moduleId].hot._selfAccepted)
-/******/ 				outdatedSelfAcceptedModules.push({
-/******/ 					module: moduleId,
-/******/ 					errorHandler: installedModules[moduleId].hot._selfAccepted
-/******/ 				});
-/******/ 		}
-/******/ 	
-/******/ 		// Now in "dispose" phase
-/******/ 		hotSetStatus("dispose");
-/******/ 		var queue = outdatedModules.slice();
-/******/ 		while(queue.length > 0) {
-/******/ 			var moduleId = queue.pop();
-/******/ 			var module = installedModules[moduleId];
-/******/ 			if(!module) continue;
-/******/ 	
-/******/ 			var data = {};
-/******/ 	
-/******/ 			// Call dispose handlers
-/******/ 			var disposeHandlers = module.hot._disposeHandlers;
-/******/ 			for(var j = 0; j < disposeHandlers.length; j++) {
-/******/ 				var cb = disposeHandlers[j];
-/******/ 				cb(data);
-/******/ 			}
-/******/ 			hotCurrentModuleData[moduleId] = data;
-/******/ 	
-/******/ 			// disable module (this disables requires from this module)
-/******/ 			module.hot.active = false;
-/******/ 	
-/******/ 			// remove module from cache
-/******/ 			delete installedModules[moduleId];
-/******/ 	
-/******/ 			// remove "parents" references from all children
-/******/ 			for(var j = 0; j < module.children.length; j++) {
-/******/ 				var child = installedModules[module.children[j]];
-/******/ 				if(!child) continue;
-/******/ 				var idx = child.parents.indexOf(moduleId);
-/******/ 				if(idx >= 0) {
-/******/ 					child.parents.splice(idx, 1);
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// remove outdated dependency from module children
-/******/ 		for(var moduleId in outdatedDependencies) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
-/******/ 				var module = installedModules[moduleId];
-/******/ 				var moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 				for(var j = 0; j < moduleOutdatedDependencies.length; j++) {
-/******/ 					var dependency = moduleOutdatedDependencies[j];
-/******/ 					var idx = module.children.indexOf(dependency);
-/******/ 					if(idx >= 0) module.children.splice(idx, 1);
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Not in "apply" phase
-/******/ 		hotSetStatus("apply");
-/******/ 	
-/******/ 		hotCurrentHash = hotUpdateNewHash;
-/******/ 	
-/******/ 		// insert new code
-/******/ 		for(var moduleId in appliedUpdate) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(appliedUpdate, moduleId)) {
-/******/ 				modules[moduleId] = appliedUpdate[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// call accept handlers
-/******/ 		var error = null;
-/******/ 		for(var moduleId in outdatedDependencies) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
-/******/ 				var module = installedModules[moduleId];
-/******/ 				var moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 				var callbacks = [];
-/******/ 				for(var i = 0; i < moduleOutdatedDependencies.length; i++) {
-/******/ 					var dependency = moduleOutdatedDependencies[i];
-/******/ 					var cb = module.hot._acceptedDependencies[dependency];
-/******/ 					if(callbacks.indexOf(cb) >= 0) continue;
-/******/ 					callbacks.push(cb);
-/******/ 				}
-/******/ 				for(var i = 0; i < callbacks.length; i++) {
-/******/ 					var cb = callbacks[i];
-/******/ 					try {
-/******/ 						cb(outdatedDependencies);
-/******/ 					} catch(err) {
-/******/ 						if(!error)
-/******/ 							error = err;
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Load self accepted modules
-/******/ 		for(var i = 0; i < outdatedSelfAcceptedModules.length; i++) {
-/******/ 			var item = outdatedSelfAcceptedModules[i];
-/******/ 			var moduleId = item.module;
-/******/ 			hotCurrentParents = [moduleId];
-/******/ 			try {
-/******/ 				__webpack_require__(moduleId);
-/******/ 			} catch(err) {
-/******/ 				if(typeof item.errorHandler === "function") {
-/******/ 					try {
-/******/ 						item.errorHandler(err);
-/******/ 					} catch(err) {
-/******/ 						if(!error)
-/******/ 							error = err;
-/******/ 					}
-/******/ 				} else if(!error)
-/******/ 					error = err;
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// handle errors in accept handlers and self accepted module load
-/******/ 		if(error) {
-/******/ 			hotSetStatus("fail");
-/******/ 			return callback(error);
-/******/ 		}
-/******/ 	
-/******/ 		hotSetStatus("idle");
-/******/ 		callback(null, outdatedModules);
-/******/ 	}
-
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -511,14 +13,11 @@
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
-/******/ 			loaded: false,
-/******/ 			hot: hotCreateModule(moduleId),
-/******/ 			parents: hotCurrentParents,
-/******/ 			children: []
+/******/ 			loaded: false
 /******/ 		};
 
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, hotCreateRequire(moduleId));
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
@@ -537,11 +36,8 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 
-/******/ 	// __webpack_hash__
-/******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
-
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(0)(0);
+/******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -615,7 +111,7 @@
 
 					$.each(tracks, function (trki, trk) {
 									if (!trk.name || !trk.artist) {
-													console.log('no track name or artists');
+													//	    console.log('no track name or artists');
 													return;
 									}
 									var cleantrk = window.clean(trk.name);
@@ -673,7 +169,13 @@
 																													lessgood[cleantrk] = { s: score || 0, o: vidobj };
 																									}
 
-																									console.log('its a ' + what, 'srch:', song, 'you said: ', cleanartist, cleantrk, 'tube said', cleanYTitle);
+																									/*			console.log('its a ' + what, 'srch:',
+	                        				    song,
+	                        				    'you said: ',
+	                        				    cleanartist,
+	                        				    cleantrk,
+	                        				    'tube said',
+	                        				    cleanYTitle); */
 																									return true;
 																					}
 																					return false;
@@ -693,7 +195,12 @@
 	                	      }*/
 
 																	if (cleanYTitle.indexOf(cleantrk.replace(/s$/gim, '')) === -1) {
-																					console.log('no title.', 'srch:', song, 'you said: ', cleantrk, 'tube said', cleanYTitle);
+																					/*		    console.log('no title.', 'srch:',
+	                    				song,
+	                    				'you said: ',
+	                    				cleantrk,
+	                    				'tube said',
+	                    				cleanYTitle); */
 																					return;
 																	}
 
@@ -752,9 +259,9 @@
 
 	// term, cb
 	var gettracksfromitunes = function gettracksfromitunes(t, n) {
-					console.log('getting track', t, softclean(t));
+					//    console.log('getting track', t, softclean(t));
 					$.getJSON("https://itunes.apple.com/search?term=" + encodeURIComponent(softclean(t)) + "&limit=25&media=music&entity=musicTrack&callback=?", function (r) {
-									console.log(r);
+									//	console.log(r);
 									var i = $.map(r.results, function (n) {
 													return !clean(t).match(clean(n.trackName)) || "" === t.trim() || !clean(t).match(clean(n.artistName)) ? null : {
 																	name: n.trackName,
@@ -792,7 +299,7 @@
 					});
 	};
 
-	var list = ["http://mind-exchange.com/feed", "https://www.nowness.com/rss", "https://artsponge.wordpress.com/rss", "http://picdit.net/rss", "http://thisisnthappiness.com/rss", "http://butdoesitfloat.com/rss", "http://www.haw-lin.com/rss", "http://beautifuldecay.com/rss", "http://feeds2.feedburner.com/Swissmiss", "http://feeds.feedburner.com/ucllc/fpo", "http://www.inventorymagazine.com/updates/atom.xml", "http://www.valetmag.com/distribution/rss_all.xml", "http://feeds.feedburner.com/selectism/rss", "https://www.flickr.com/services/feeds/groups_pool.gne?id=1231870@N21&lang=en-us&format=atom", "http://mosslessmagazine.com/rss", "http://www.manystuff.org/?feed=rss2", "https://www.pinterest.com/yaelrasner/feed.rss", "https://www.pinterest.com/darotem/feed.rss", "http://httpjasmin.tumblr.com/rss", "http://artruby.com/rss", "http://badbananas.tumblr.com/rss", "http://blackcontemporaryart.tumblr.com/rss", "http://boburu.tumblr.com/rss", "http://booooooom.tumblr.com/rss", "http://bradypus.tumblr.com/rss", "http://bremser.tumblr.com/rss", "http://bryanschutmaat.tumblr.com/rss", "http://contemporary-art-blog.com/rss", "http://cosascool.tumblr.com/rss", "http://covetarts.tumblr.com/rss", "http://darksilenceinsuburbia.tumblr.com/rss", "http://drawingdiary.tumblr.com/rss", "http://ecrcover.tumblr.com/rss", "http://eiginleiki.net/rss", "http://exhibition-ism.com/rss", "http://featureshoot.tumblr.com/rss", "http://fecalface.tumblr.com/rss", "http://floatingcosmos.tumblr.com/rss", "http://folknouveau.tumblr.com/rss", "http://foundinspirationmovingforward.tumblr.com/rss", "http://free-parking.tumblr.com/rss", "http://frntrs.tumblr.com/rss", "http://fullserving.tumblr.com/rss", "http://gh0stgums.com/rss", "http://gills.tumblr.com/rss", "http://gradientchild.tumblr.com/rss", "http://grossgaians.tumblr.com/rss", "http://haw-lin.com/rss", "http://heathwest.tumblr.com/rss", "http://heliocentrism.tumblr.com/rss", "http://hifructosemag.tumblr.com/rss", "http://highonyourmemories.tumblr.com/rss", "http://holyurl.tumblr.com/rss", "http://human-empathy.tumblr.com/rss", "http://hydeordie.com/rss", "http://hyperallergic.tumblr.com/rss", "http://iamjapanese.tumblr.com/rss", "http://iceblack.tumblr.com/rss", "http://if-you-leave.tumblr.com/rss", "http://iheartmyart.com/rss", "http://i-love-art.tumblr.com/rss", "http://inspiredbyme.tumblr.com/rss", "http://inthenewfrontier.tumblr.com/rss", "http://ipocrisia.tumblr.com/rss", "http://jennilee.tumblr.com/rss", "http://jennyannmorgan.tumblr.com/rss", "http://jesuisperdu.tumblr.com/rss", "http://jillsies.tumblr.com/rss", "http://julianminima.tumblr.com/rss", "http://juxtapozmag.tumblr.com/rss", "http://killthecollector.tumblr.com/rss", "http://kinetics.tumblr.com/rss", "http://knowinng.tumblr.com/rss", "http://krypten.tumblr.com/rss", "http://kvntrn.tumblr.com/rss", "http://la-beaute–de-pandore.tumblr.com/rss", "http://lacma.tumblr.com/rss", "http://laravissante.tumblr.com/rss", "http://lepoeteborgne.tumblr.com/rss", "http://leslieseuffert.tumblr.com/rss", "http://letselopetoday.tumblr.com/rss", "http://like-ivy.tumblr.com/rss", "http://likeafieldmouse.com/rss", "http://limboyouth.com/rss", "http://m75.tumblr.com/rss", "http://malaising.tumblr.com/rss", "http://mangopopsicle.org/rss", "http://mdme-x.tumblr.com/rss", "http://mmday.tumblr.com/rss", "http://mpdrolet.tumblr.com/rss", "http://murmansea.tumblr.com/rss", "http://museumoflatinamericanart.tumblr.com/rss", "http://museumuesum.tumblr.com/rss", "http://myampgoesto11.tumblr.com/rss", "http://mydarkenedeyes.tumblr.com/rss", "http://mydeadpony.tumblr.com/rss", "http://nattonelli.tumblr.com/rss", "http://nearlya.tumblr.com/rss", "http://netanoesporno.tumblr.com/rss", "http://neural-network.tumblr.com/rss", "http://newodor.tumblr.com/rss", "http://nopefun.com/rss", "http://nothingwritten.com/rss", "http://nyctaeus.tumblr.com/rss", "http://objectstatus.tumblr.com/rss", "http://oftheafternoon.com/rss", "http://oldhorse.tumblr.com/rss", "http://oneforeverywish.tumblr.com/rss", "http://onepainting.tumblr.com/rss", "http://oxane.tumblr.com/rss", "http://paper-journal.tumblr.com/rss", "http://partyswetzs.tumblr.com/rss", "http://photographersdirectory.tumblr.com/rss", "http://photographsonthebrain.com/rss", "http://planetaryfolklore.tumblr.com/rss", "http://pleasexcusethemess.tumblr.com/rss", "http://plotsummary.tumblr.com/rss", "http://postpatternism.tumblr.com/rss", "http://pulmonaire.tumblr.com/rss", "http://raakha.tumblr.com/rss", "http://razorshapes.tumblr.com/rss", "http://readingforms.com/rss", "http://robotscrytoo.com/rss", "http://rocketscience.tumblr.com/rss", "http://ronulicny.tumblr.com/rss", "http://roomdark.tumblr.com/rss", "http://rustybreak.tumblr.com/rss", "http://ryandonato.com/rss", "http://sculptores.tumblr.com/rss", "http://sculpture-center.tumblr.com/rss", "http://selektormagazine.tumblr.com/rss", "http://self-romance.tumblr.com/rss", "http://semihlakerta.tumblr.com/rss", "http://sensitive.tumblr.com/rss", "http://septagonstudios.tumblr.com/rss", "http://sewerscape.tumblr.com/rss", "http://sfmoma.tumblr.com/rss", "http://shanellpapp.tumblr.com/rss", "http://shootinggallery.tumblr.com/rss", "http://showslow.tumblr.com/rss", "http://smalljoke.tumblr.com/rss", "http://snowce.tumblr.com/rss", "http://somedisordered.tumblr.com/rss", "http://somethingsforyoutolookat.tumblr.com/rss", "http://somewhatreal.tumblr.com/rss", "http://sonicteeth.tumblr.com/rss", "http://spatula.tumblr.com/rss", "http://spraybeast.tumblr.com/rss", "http://staged-photography.tumblr.com/rss", "http://starbucks-fauxhemian.tumblr.com/rss", "http://stream.fm-a.dk/rss", "http://supermaxpro.tumblr.com/rss", "http://supersonicelectronic.com/rss", "http://technolowgy.tumblr.com/rss", "http://the-coven.tumblr.com/rss", "http://the-drawing-center.tumblr.com/rss", "http://the-social-collective.tumblr.com/rss", "http://thecreatorsproject.tumblr.com/rss", "http://theformdeform.tumblr.com/rss", "http://thegetty.tumblr.com/rss", "http://theglaze.tumblr.com/rss", "http://theheavycollective.com/rss", "http://theholydeer.tumblr.com/rss", "http://thejogging.tumblr.com/rss", "http://theonlymagicleftisart.com/rss", "http://thephotographicimage.tumblr.com/rss", "http://thepoeticphotographycollection.tumblr.com/rss", "http://thequandary.tumblr.com/rss", "http://thesearenicephotos.tumblr.com/rss", "http://thisisacult.org/rss", "http://timelightbox.tumblr.com/rss", "http://toutpetitlaplanete.tumblr.com/rss", "http://turbofolk.tumblr.com/rss", "http://uhohgallery.tumblr.com/rss", "http://unknowneditors.tumblr.com/rss", "http://unseentactics.tumblr.com/rss", "http://untrustyou.tumblr.com/rss", "http://upandcomingart.tumblr.com/rss", "http://victimize.tumblr.com/rss", "http://vinkelret.tumblr.com/rss", "http://visual-poetry.tumblr.com/rss", "http://visualhunt.tumblr.com/rss", "http://voodoovoodoo.tumblr.com/rss", "http://wandering-bears.tumblr.com/rss", "http://welgevormd.com/rss", "http://whitneymuseum.tumblr.com/rss", "http://wowgreat.tumblr.com/rss", "http://wvdv.tumblr.com/rss", "http://wwwalk.tumblr.com/rss", "http://zzzzoom.tumblr.com/rss", "http://www.huhmagazine.co.uk/blog/rss/feed.php", "http://superpaperqueen.tumblr.com/rss", "http://freedompoopshine.tumblr.com/rss", "http://elizamayn.tumblr.com/rss", "http://noworkonsunday.com/rss", "http://andersholmbergarkitekter.tumblr.com/rss", "http://tropical-moonlight.tumblr.com/rss", "http://antronaut.net/rss", "http://tonecon.es/rss", "http://thekiko.tumblr.com/rss", "http://thenletitbe.tumblr.com/rss", "http://www.somewhereiwouldliketolive.com/feeds/posts/default", "http://www.missmoss.co.za/feed/", "http://feeds2.feedburner.com/itsnicethat/SlXC", "http://ninebagatelles.tumblr.com/", "http://artistportfoliosites.tumblr.com/rss", "http://burnsidepacific.tumblr.com/rss", "http://eyescapemagazine.tumblr.com/rss", "http://gallery44.tumblr.com/rss", "http://hldky.tumblr.com/rss", "http://lesthetiquedelinventaire.tumblr.com/rss", "http://maciekjasik.tumblr.com/rss", "http://ninebagatelles.tumblr.com/rss", "http://thefunctionfordrift.tumblr.com/rss", "http://thewowpicture.tumblr.com/rss", "http://thisphotothat.tumblr.com/rss", "http://young-shot.com/rss"];
+	var list = ["http://mind-exchange.com/feed", "https://www.nowness.com/rss", "https://artsponge.wordpress.com/rss", "http://picdit.net/rss", "http://thisisnthappiness.com/rss", "http://butdoesitfloat.com/rss", "http://www.haw-lin.com/rss", "http://beautifuldecay.com/rss", "http://feeds2.feedburner.com/Swissmiss", "http://feeds.feedburner.com/ucllc/fpo", "http://www.inventorymagazine.com/updates/atom.xml", "http://www.valetmag.com/distribution/rss_all.xml", "http://feeds.feedburner.com/selectism/rss", "http://mosslessmagazine.com/rss", "http://www.manystuff.org/?feed=rss2", "https://www.pinterest.com/yaelrasner/feed.rss", "https://www.pinterest.com/darotem/feed.rss", "http://httpjasmin.tumblr.com/rss", "http://artruby.com/rss", "http://badbananas.tumblr.com/rss", "http://blackcontemporaryart.tumblr.com/rss", "http://boburu.tumblr.com/rss", "http://booooooom.tumblr.com/rss", "http://bradypus.tumblr.com/rss", "http://bremser.tumblr.com/rss", "http://bryanschutmaat.tumblr.com/rss", "http://contemporary-art-blog.com/rss", "http://cosascool.tumblr.com/rss", "http://covetarts.tumblr.com/rss", "http://darksilenceinsuburbia.tumblr.com/rss", "http://drawingdiary.tumblr.com/rss", "http://ecrcover.tumblr.com/rss", "http://eiginleiki.net/rss", "http://exhibition-ism.com/rss", "http://featureshoot.tumblr.com/rss", "http://fecalface.tumblr.com/rss", "http://floatingcosmos.tumblr.com/rss", "http://folknouveau.tumblr.com/rss", "http://foundinspirationmovingforward.tumblr.com/rss", "http://free-parking.tumblr.com/rss", "http://frntrs.tumblr.com/rss", "http://fullserving.tumblr.com/rss", "http://gh0stgums.com/rss", "http://gills.tumblr.com/rss", "http://gradientchild.tumblr.com/rss", "http://grossgaians.tumblr.com/rss", "http://haw-lin.com/rss", "http://heathwest.tumblr.com/rss", "http://heliocentrism.tumblr.com/rss", "http://hifructosemag.tumblr.com/rss", "http://highonyourmemories.tumblr.com/rss", "http://holyurl.tumblr.com/rss", "http://human-empathy.tumblr.com/rss", "http://hydeordie.com/rss", "http://hyperallergic.tumblr.com/rss", "http://iamjapanese.tumblr.com/rss", "http://iceblack.tumblr.com/rss", "http://if-you-leave.tumblr.com/rss", "http://iheartmyart.com/rss", "http://i-love-art.tumblr.com/rss", "http://inspiredbyme.tumblr.com/rss", "http://inthenewfrontier.tumblr.com/rss", "http://ipocrisia.tumblr.com/rss", "http://jennilee.tumblr.com/rss", "http://jennyannmorgan.tumblr.com/rss", "http://jesuisperdu.tumblr.com/rss", "http://jillsies.tumblr.com/rss", "http://julianminima.tumblr.com/rss", "http://juxtapozmag.tumblr.com/rss", "http://killthecollector.tumblr.com/rss", "http://kinetics.tumblr.com/rss", "http://knowinng.tumblr.com/rss", "http://krypten.tumblr.com/rss", "http://kvntrn.tumblr.com/rss", "http://la-beaute–de-pandore.tumblr.com/rss", "http://lacma.tumblr.com/rss", "http://laravissante.tumblr.com/rss", "http://lepoeteborgne.tumblr.com/rss", "http://leslieseuffert.tumblr.com/rss", "http://letselopetoday.tumblr.com/rss", "http://like-ivy.tumblr.com/rss", "http://likeafieldmouse.com/rss", "http://limboyouth.com/rss", "http://m75.tumblr.com/rss", "http://malaising.tumblr.com/rss", "http://mangopopsicle.org/rss", "http://mdme-x.tumblr.com/rss", "http://mmday.tumblr.com/rss", "http://mpdrolet.tumblr.com/rss", "http://murmansea.tumblr.com/rss", "http://museumoflatinamericanart.tumblr.com/rss", "http://museumuesum.tumblr.com/rss", "http://myampgoesto11.tumblr.com/rss", "http://mydarkenedeyes.tumblr.com/rss", "http://mydeadpony.tumblr.com/rss", "http://nattonelli.tumblr.com/rss", "http://nearlya.tumblr.com/rss", "http://netanoesporno.tumblr.com/rss", "http://neural-network.tumblr.com/rss", "http://newodor.tumblr.com/rss", "http://nopefun.com/rss", "http://nothingwritten.com/rss", "http://nyctaeus.tumblr.com/rss", "http://objectstatus.tumblr.com/rss", "http://oftheafternoon.com/rss", "http://oldhorse.tumblr.com/rss", "http://oneforeverywish.tumblr.com/rss", "http://onepainting.tumblr.com/rss", "http://oxane.tumblr.com/rss", "http://paper-journal.tumblr.com/rss", "http://partyswetzs.tumblr.com/rss", "http://photographersdirectory.tumblr.com/rss", "http://photographsonthebrain.com/rss", "http://planetaryfolklore.tumblr.com/rss", "http://pleasexcusethemess.tumblr.com/rss", "http://plotsummary.tumblr.com/rss", "http://postpatternism.tumblr.com/rss", "http://pulmonaire.tumblr.com/rss", "http://raakha.tumblr.com/rss", "http://razorshapes.tumblr.com/rss", "http://readingforms.com/rss", "http://robotscrytoo.com/rss", "http://rocketscience.tumblr.com/rss", "http://ronulicny.tumblr.com/rss", "http://roomdark.tumblr.com/rss", "http://rustybreak.tumblr.com/rss", "http://ryandonato.com/rss", "http://sculptores.tumblr.com/rss", "http://sculpture-center.tumblr.com/rss", "http://selektormagazine.tumblr.com/rss", "http://self-romance.tumblr.com/rss", "http://semihlakerta.tumblr.com/rss", "http://sensitive.tumblr.com/rss", "http://septagonstudios.tumblr.com/rss", "http://sewerscape.tumblr.com/rss", "http://sfmoma.tumblr.com/rss", "http://shanellpapp.tumblr.com/rss", "http://shootinggallery.tumblr.com/rss", "http://showslow.tumblr.com/rss", "http://smalljoke.tumblr.com/rss", "http://snowce.tumblr.com/rss", "http://somedisordered.tumblr.com/rss", "http://somethingsforyoutolookat.tumblr.com/rss", "http://somewhatreal.tumblr.com/rss", "http://sonicteeth.tumblr.com/rss", "http://spatula.tumblr.com/rss", "http://spraybeast.tumblr.com/rss", "http://staged-photography.tumblr.com/rss", "http://starbucks-fauxhemian.tumblr.com/rss", "http://stream.fm-a.dk/rss", "http://supermaxpro.tumblr.com/rss", "http://supersonicelectronic.com/rss", "http://technolowgy.tumblr.com/rss", "http://the-coven.tumblr.com/rss", "http://the-drawing-center.tumblr.com/rss", "http://the-social-collective.tumblr.com/rss", "http://thecreatorsproject.tumblr.com/rss", "http://theformdeform.tumblr.com/rss", "http://thegetty.tumblr.com/rss", "http://theglaze.tumblr.com/rss", "http://theheavycollective.com/rss", "http://theholydeer.tumblr.com/rss", "http://thejogging.tumblr.com/rss", "http://theonlymagicleftisart.com/rss", "http://thephotographicimage.tumblr.com/rss", "http://thepoeticphotographycollection.tumblr.com/rss", "http://thequandary.tumblr.com/rss", "http://thesearenicephotos.tumblr.com/rss", "http://thisisacult.org/rss", "http://timelightbox.tumblr.com/rss", "http://toutpetitlaplanete.tumblr.com/rss", "http://turbofolk.tumblr.com/rss", "http://uhohgallery.tumblr.com/rss", "http://unknowneditors.tumblr.com/rss", "http://unseentactics.tumblr.com/rss", "http://untrustyou.tumblr.com/rss", "http://upandcomingart.tumblr.com/rss", "http://victimize.tumblr.com/rss", "http://vinkelret.tumblr.com/rss", "http://visual-poetry.tumblr.com/rss", "http://visualhunt.tumblr.com/rss", "http://voodoovoodoo.tumblr.com/rss", "http://wandering-bears.tumblr.com/rss", "http://welgevormd.com/rss", "http://whitneymuseum.tumblr.com/rss", "http://wowgreat.tumblr.com/rss", "http://wvdv.tumblr.com/rss", "http://wwwalk.tumblr.com/rss", "http://zzzzoom.tumblr.com/rss", "http://www.huhmagazine.co.uk/blog/rss/feed.php", "http://superpaperqueen.tumblr.com/rss", "http://freedompoopshine.tumblr.com/rss", "http://elizamayn.tumblr.com/rss", "http://noworkonsunday.com/rss", "http://andersholmbergarkitekter.tumblr.com/rss", "http://tropical-moonlight.tumblr.com/rss", "http://antronaut.net/rss", "http://tonecon.es/rss", "http://thekiko.tumblr.com/rss", "http://thenletitbe.tumblr.com/rss", "http://www.somewhereiwouldliketolive.com/feeds/posts/default", "http://www.missmoss.co.za/feed/", "http://feeds2.feedburner.com/itsnicethat/SlXC", "http://ninebagatelles.tumblr.com/", "http://artistportfoliosites.tumblr.com/rss", "http://burnsidepacific.tumblr.com/rss", "http://eyescapemagazine.tumblr.com/rss", "http://gallery44.tumblr.com/rss", "http://hldky.tumblr.com/rss", "http://lesthetiquedelinventaire.tumblr.com/rss", "http://maciekjasik.tumblr.com/rss", "http://ninebagatelles.tumblr.com/rss", "http://thefunctionfordrift.tumblr.com/rss", "http://thewowpicture.tumblr.com/rss", "http://thisphotothat.tumblr.com/rss", "http://young-shot.com/rss"];
 
 	var listpick = function listpick() {
 					var x = new Date();
@@ -849,7 +356,7 @@
 													$.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function (x) {
 																	var toset = {};
 																	if (!x.responseData) {
-																					console.warn('no response data for', u);
+																					//		    console.warn('no response data for', u);
 																					okokok();
 																					return;
 																	}
@@ -878,7 +385,7 @@
 																													clist.push({ date: e.publishedDate, square: _react2.default.createElement(Square, { src: src, href: e.link, name: e.title, text: e.title, more: e, key: u + '_' + i }) });
 																									}
 																					} else {
-																									!src && console.log('no src', e);
+																									//			!src && console.log('no src', e)
 																					}
 																	});
 
@@ -887,7 +394,7 @@
 									});
 
 									Promise.all(allproms).then(function () {
-													console.log('finished');
+													//	    console.log('finished');
 													clist = clist.sort(function (a, b) {
 																	return new Date(b.date) - new Date(a.date);
 													});
@@ -931,7 +438,7 @@
 																									_react2.default.createElement(
 																													'span',
 																													{ className: 'love' },
-																													'love me?'
+																													'love? '
 																									)
 																					),
 																					_react2.default.createElement(
@@ -974,6 +481,10 @@
 									if (m[1].indexOf('twitt.gif') !== -1) {
 													continue;
 									}
+									if (m[1].indexOf('feedburner') !== -1) {
+													continue;
+									}
+
 									urls.push(m[1]);
 					}
 					if (urls.length === 0) {
@@ -983,9 +494,10 @@
 	};
 
 	ga('send', 'event', 'hello-peachy');
+
 	setTimeout(function () {
 					$('.right').addClass('show');
-	}, 20000);
+	}, 30000);
 
 	var Square = _react2.default.createClass({
 					displayName: 'Square',
@@ -997,8 +509,10 @@
 									var that = this;
 					},
 					nav: function nav(k, v) {},
-					clicklink: function clicklink(u) {
+					clicklink: function clicklink(that) {
+									var u = that.props.href;
 									return function (e) {
+													console.log(that.props.more);
 													e.preventDefault();
 													if (u.indexOf('?') !== -1) {
 																	u += '&ref=peachyyy.com';
@@ -1041,7 +555,7 @@
 													),
 													_react2.default.createElement(
 																	'a',
-																	{ href: this.props.href, target: '_blank', onClick: this.clicklink(this.props.href) },
+																	{ href: this.props.href, target: '_blank', onClick: this.clicklink(this) },
 																	_react2.default.createElement('img', { src: this.props.src }),
 																	_react2.default.createElement(
 																					'div',
@@ -1122,10 +636,10 @@
 									var that = this;
 									if (ps.name) {
 													gettracksfromitunes(ps.name, function (x) {
-																	console.log('from', ps.name, 'got', x);
+																	//		console.log('from', ps.name, 'got', x);
 																	var topipe = x || [{ artist: ps.name.split(': ')[0], name: ps.name.split(': ')[1], album: '' }];
 																	$.when.apply($, fetchFromPipe(x)).done(function (r) {
-																					console.log('from pipe!', r);
+																					//		    console.log('from pipe!', r)
 																					that.setState({ pipe: r });
 																	});
 																	if (x && x[0]) {
@@ -1153,7 +667,7 @@
 													);
 									}
 									var img = _react2.default.createElement('img', { src: this.state.artwork });
-									console.log('pitchsquare', this.state.artwork);
+									//	console.log('pitchsquare', this.state.artwork);
 									return _react2.default.createElement(
 													'div',
 													{ className: 'square pitchsquare' },
@@ -25604,11 +25118,11 @@
 	var update = __webpack_require__(215)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
-	if(true) {
+	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept(211, function() {
-				var newContent = __webpack_require__(211);
+			module.hot.accept("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./style.less", function() {
+				var newContent = require("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./style.less");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
