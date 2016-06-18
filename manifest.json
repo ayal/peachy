@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Peachy",
     "description": "The ultimate curation of art and other links",
-    "version": "1.0.2.4",
+    "version": "1.0.2.5",
     "chrome_url_overrides" : {
 	"newtab": "index.html"
     },
