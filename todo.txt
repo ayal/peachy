@@ -12,6 +12,7 @@
 - make it not random but by the hour (so tiles will be the same for a while)
 
 == how to pack ==
+
 change version in manifest
 copy peachy to somewhere
 put pem in peachy dir call it key.pem

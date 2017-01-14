@@ -323,8 +323,7 @@ const App = React.createClass({
 		}
 	
 		var yqls = x.query.results.rss.channel.item;
-		var items = _.filter(yqls, function(x){
-		    
+		var yqls = _.filter(yqls, function(x){
 		    var days = (new Date() - new Date(x.pubDate)) / 1000 / 60 / 60 / 24;
 		    if (days <= 3) {
 			return true;
@@ -335,7 +334,6 @@ const App = React.createClass({
 		});
 
 
-		console.log('filtered yqls', u, items);
 		_.each(yqls, function(e,i){
 		    if (!e) {
 			return;
