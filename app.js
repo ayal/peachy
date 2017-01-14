@@ -283,7 +283,7 @@ const App = React.createClass({
     getInitialState: function() {
         return {};
     },
-    componentWillMount: function() {
+    componentWillMount: function() {	
 	var that = this;
 	var toset = {};
 	var picked = listpick();
@@ -312,7 +312,11 @@ const App = React.createClass({
 	    })
 	    allproms.push(p)
 
-	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
+	    //	    $.getJSON('https://ajax.googleapis.com/ajax/services/feed/load?num=100&v=1.0&q=' + encodeURIComponent(u) + '&callback=?', function(x) {
+	    var qu = "https://query.yahooapis.com/v1/public/yql?q=" + encodeURIComponent("select * from xml where url = '" + u + "'") + "&format=json&env=store://datatables.org/alltableswithkeys&callback=?";
+	    console.log('QU', qu);
+	    $.getJSON(qu, function(x) {
+		console.log('yql', x);
 		var toset = {};
 		if (!x.responseData) {
 //		    console.warn('no response data for', u);
